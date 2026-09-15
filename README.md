@@ -83,6 +83,24 @@ cp .env.example .env
 
 **주의**: 포트 5432가 이미 다른 PostgreSQL 설치본에 점유돼 있으면 충돌한다. Windows에서는 `Get-Service postgresql*`, macOS/Linux는 `lsof -i :5432`로 확인하고, 필요하면 5433을 쓰되 `.env`에도 반영한다.
 
+### 7. 백엔드 실행 시 .env 로드
+
+`application.yml`의 `POSTGRES_*` 기본값은 예시(`changeme`)이므로, 실제 `.env` 값과 다르면 `./mvnw spring-boot:run`/`test`가 DB 인증에 실패한다. 실행 전 `.env`를 셸 환경변수로 로드한다.
+
+```bash
+# Git Bash / macOS / Linux
+set -a; source .env; set +a
+./mvnw spring-boot:run
+```
+
+```powershell
+# PowerShell
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^\s*([^#=]+)=(.*)$') { Set-Item "Env:$($matches[1].Trim())" $matches[2].Trim() }
+}
+.\mvnw.cmd spring-boot:run
+```
+
 ## 커밋 컨벤션
 
 `<type>(<task-id>): <설명>`
