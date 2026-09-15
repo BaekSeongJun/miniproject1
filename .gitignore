@@ -1,0 +1,32 @@
+# 환경 변수
+.env
+.env.local
+.env.*.local
+
+# 백엔드 (Maven Wrapper는 커밋 대상 — 여기서 무시하지 않는다)
+miniproject1-backend/target/
+
+# 프론트엔드
+miniproject1-frontend/.next/
+miniproject1-frontend/node_modules/
+
+# 업로드
+uploads/
+
+# 시드 생성 스크립트
+tools/seed-generator/__pycache__/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 로컬 AI 도구 설정 및 산출물
+.claude/
+.codex/
+.aider-desk/
+.impeccable/
+.mcp.json
+skills-lock.json
+graphify-out/
+shrimp_data/
