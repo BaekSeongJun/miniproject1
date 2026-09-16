@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:pharmaprice}
     username: ${POSTGRES_USER:pharmaprice}
-    password: ${POSTGRES_PASSWORD:changeme}
+    password: ${POSTGRES_PASSWORD:qwe123}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -27,6 +27,12 @@ springdoc:
 
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
+
+jwt:
+  # 프로덕션에서는 반드시 JWT_SECRET 환경변수로 덮어쓴다 (최소 32바이트).
+  secret: ${JWT_SECRET:local-dev-only-jwt-secret-minimum-32-bytes}
+  access-token-validity-seconds: 1800
+  refresh-token-validity-seconds: 1209600
 
 recommendation:
   weights:
