@@ -1,5 +1,6 @@
 package com.pharmaprice.report;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -136,5 +137,79 @@ class PriceReportControllerIntegrationTest extends AbstractIntegrationTest {
 			.andExpect(jsonPath("$.flagged").value(true))
 			.andExpect(jsonPath("$.flagReason").value("OUTLIER_HIGH"))
 			.andExpect(jsonPath("$.updatedStat.repPrice").doesNotExist());
+	}
+
+	@Test
+	void 목록_조회시_reporter는_닉네임만_노출하고_hasReceipt는_boolean() throws Exception {
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(reportJson(pharmacy.getId(), otcDrug.getId(), 2800, null)))
+			.andExpect(status().isCreated());
+
+		mockMvc.perform(get("/api/v1/price-reports")
+				.param("pharmacyId", String.valueOf(pharmacy.getId())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content[0].reporter.nickname").value("제보자"))
+			.andExpect(jsonPath("$.content[0].reporter.id").doesNotExist())
+			.andExpect(jsonPath("$.content[0].reporter.email").doesNotExist())
+			.andExpect(jsonPath("$.content[0].hasReceipt").isBoolean());
+	}
+
+	@Test
+	void pharmacyId_필터로_해당_약국_제보만_반환된다() throws Exception {
+		Pharmacy other = pharmacyRepository.save(Pharmacy.builder()
+			.name("다른약국").lat(37.6).lng(127.1).isActive(true).build());
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(reportJson(pharmacy.getId(), otcDrug.getId(), 2800, null)))
+			.andExpect(status().isCreated());
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(reportJson(other.getId(), otcDrug.getId(), 3200, null)))
+			.andExpect(status().isCreated());
+
+		mockMvc.perform(get("/api/v1/price-reports")
+				.param("pharmacyId", String.valueOf(pharmacy.getId())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].pharmacy.id").value(pharmacy.getId()));
+	}
+
+	@Test
+	void mine_true를_비로그인으로_호출시_401_UNAUTHENTICATED() throws Exception {
+		mockMvc.perform(get("/api/v1/price-reports").param("mine", "true"))
+			.andExpect(status().isUnauthorized())
+			.andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+	}
+
+	@Test
+	void mine_true를_로그인해서_호출시_본인_제보만_반환() throws Exception {
+		AppUser other = appUserRepository.save(AppUser.builder()
+			.email("other-reporter@example.com").passwordHash(passwordEncoder.encode("pw"))
+			.nickname("타인").role(UserRole.USER).status(UserStatus.ACTIVE).reportCount(0).build());
+		String otherToken = jwtTokenProvider.createAccessToken(other);
+		Pharmacy pharmacy2 = pharmacyRepository.save(Pharmacy.builder()
+			.name("약국2").lat(37.6).lng(127.1).isActive(true).build());
+
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(reportJson(pharmacy.getId(), otcDrug.getId(), 2800, null)))
+			.andExpect(status().isCreated());
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + otherToken)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(reportJson(pharmacy2.getId(), otcDrug.getId(), 3000, null)))
+			.andExpect(status().isCreated());
+
+		mockMvc.perform(get("/api/v1/price-reports")
+				.param("mine", "true")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].reporter.nickname").value("제보자"));
 	}
 }

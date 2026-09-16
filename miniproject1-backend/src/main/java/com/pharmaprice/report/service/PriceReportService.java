@@ -2,6 +2,7 @@ package com.pharmaprice.report.service;
 
 import com.pharmaprice.auth.domain.AppUser;
 import com.pharmaprice.auth.repository.AppUserRepository;
+import com.pharmaprice.common.dto.PageResponse;
 import com.pharmaprice.common.exception.ApiException;
 import com.pharmaprice.drug.domain.Drug;
 import com.pharmaprice.drug.repository.DrugRepository;
@@ -15,7 +16,9 @@ import com.pharmaprice.report.domain.ReportSource;
 import com.pharmaprice.report.domain.ReportStatus;
 import com.pharmaprice.report.domain.UploadedFile;
 import com.pharmaprice.report.dto.PriceReportCreateRequest;
+import com.pharmaprice.report.dto.PriceReportListItemResponse;
 import com.pharmaprice.report.dto.PriceReportResponse;
+import com.pharmaprice.report.repository.PriceReportQueryRepository;
 import com.pharmaprice.report.repository.PriceReportRepository;
 import com.pharmaprice.report.repository.UploadedFileRepository;
 import java.math.BigDecimal;
@@ -25,6 +28,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,8 +44,10 @@ public class PriceReportService {
 	private static final int MAX_PAST_DAYS = 180;
 	private static final BigDecimal OUTLIER_LOW_RATIO = new BigDecimal("0.3");
 	private static final BigDecimal OUTLIER_HIGH_RATIO = new BigDecimal("3");
+	private static final int MAX_PAGE_SIZE = 50;
 
 	private final PriceReportRepository priceReportRepository;
+	private final PriceReportQueryRepository priceReportQueryRepository;
 	private final PharmacyRepository pharmacyRepository;
 	private final DrugRepository drugRepository;
 	private final AppUserRepository appUserRepository;
@@ -98,6 +106,19 @@ public class PriceReportService {
 			? "입력하신 가격이 이 약품의 일반적인 가격대와 크게 달라 통계에 반영되지 않았습니다. 관리자 확인 후 반영됩니다."
 			: null;
 		return PriceReportResponse.of(report, warning, stat.map(this::toUpdatedStat).orElse(null));
+	}
+
+	@Transactional(readOnly = true)
+	public PageResponse<PriceReportListItemResponse> list(
+			Long pharmacyId, Long drugId, boolean mine, Long currentUserId, int page, int size) {
+		if (mine && currentUserId == null) {
+			throw new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", "본인 제보 조회는 로그인이 필요합니다.");
+		}
+		Long userId = mine ? currentUserId : null;
+		Pageable pageable = PageRequest.of(page, Math.min(size, MAX_PAGE_SIZE));
+		Page<PriceReportQueryRepository.PriceReportListProjection> result =
+			priceReportQueryRepository.search(pharmacyId, drugId, userId, pageable);
+		return PageResponse.of(result.map(PriceReportListItemResponse::from));
 	}
 
 	private FlagReason detectOutlier(long drugId, int price) {
