@@ -6,9 +6,11 @@ import java.util.TimeZone;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableConfigurationProperties(RecommendationProperties.class)
+@EnableJpaAuditing
 public class Miniproject1BackendApplication {
 
 	public static void main(String[] args) {
