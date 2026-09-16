@@ -1,20 +1,37 @@
 package com.pharmaprice.common.exception;
 
 import com.pharmaprice.common.dto.ErrorResponse;
+import java.util.List;
 import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 // 서비스 계층은 "CODE: message" 형태의 IllegalArgumentException(400)과
 // "CODE" 형태의 NoSuchElementException(404)을 던지는 기존 컨벤션을 따른다 (SearchService, DrugService 등).
+// 400 외의 상태코드가 필요하면 ApiException을 던진다.
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+	@ExceptionHandler(ApiException.class)
+	public ResponseEntity<ErrorResponse> handleApiException(ApiException ex) {
+		return ResponseEntity.status(ex.getStatus()).body(ErrorResponse.of(ex.getCode(), ex.getMessage()));
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+		List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
+			.map(fe -> new ErrorResponse.FieldError(fe.getField(), fe.getDefaultMessage()))
+			.toList();
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			.body(ErrorResponse.of("VALIDATION_FAILED", "요청 값이 유효하지 않습니다.", fieldErrors));
+	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {

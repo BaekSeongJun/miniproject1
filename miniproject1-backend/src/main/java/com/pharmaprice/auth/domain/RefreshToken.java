@@ -44,4 +44,8 @@ public class RefreshToken extends BaseTimeEntity {
 		this.tokenHash = tokenHash;
 		this.expiresAt = expiresAt;
 	}
+
+	public void revoke() {
+		this.revokedAt = Instant.now();
+	}
 }
