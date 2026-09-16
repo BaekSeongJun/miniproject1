@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 // 서비스 계층은 "CODE: message" 형태의 IllegalArgumentException(400)과
 // "CODE" 형태의 NoSuchElementException(404)을 던지는 기존 컨벤션을 따른다 (SearchService, DrugService 등).
@@ -39,6 +40,12 @@ public class GlobalExceptionHandler {
 		String code = parts.length > 1 ? parts[0].trim() : "VALIDATION_FAILED";
 		String message = parts.length > 1 ? parts[1].trim() : ex.getMessage();
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(code, message));
+	}
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<ErrorResponse> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+		return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+			.body(ErrorResponse.of("FILE_TOO_LARGE", "파일 크기는 5MB를 초과할 수 없습니다."));
 	}
 
 	@ExceptionHandler(NoSuchElementException.class)
