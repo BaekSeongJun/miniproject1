@@ -58,4 +58,8 @@ public class AppUser extends BaseTimeEntity {
 		this.status = status;
 		this.reportCount = reportCount;
 	}
+
+	public void increaseReportCount() {
+		this.reportCount = this.reportCount + 1;
+	}
 }
