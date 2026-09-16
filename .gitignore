@@ -9,6 +9,7 @@ miniproject1-backend/target/
 # 프론트엔드
 miniproject1-frontend/.next/
 miniproject1-frontend/node_modules/
+miniproject1-frontend/tsconfig.tsbuildinfo
 
 # 업로드
 uploads/
@@ -30,3 +31,4 @@ tools/seed-generator/__pycache__/
 skills-lock.json
 graphify-out/
 shrimp_data/
+.playwright-mcp/
