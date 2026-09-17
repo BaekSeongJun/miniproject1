@@ -46,7 +46,9 @@ export default function MyReportsPage() {
       {data && data.content.length === 0 && (
         <div className="flex flex-col items-center gap-4">
           <EmptyState message="아직 제보한 가격이 없습니다." />
-          <Button render={<Link href="/reports/new" />}>첫 가격을 제보해보세요</Button>
+          <Button nativeButton={false} render={<Link href="/reports/new" />}>
+            첫 가격을 제보해보세요
+          </Button>
         </div>
       )}
 
