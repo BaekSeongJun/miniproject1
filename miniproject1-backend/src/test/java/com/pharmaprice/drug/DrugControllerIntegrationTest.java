@@ -27,7 +27,7 @@ class DrugControllerIntegrationTest extends AbstractIntegrationTest {
 	@BeforeEach
 	void setUp() {
 		drugRepository.save(Drug.builder()
-			.itemSeq("196800050").name("타이레놀정500밀리그람").displayName("타이레놀 500mg")
+			.itemSeq("196800050").name("테스트약품정500밀리그람").displayName("테스트약품 500mg")
 			.maker("한국얀센").category("해열진통").form("정제").packageUnit("8정")
 			.otcFlag(true).basePrice(3000).build());
 		etcDrug = drugRepository.save(Drug.builder()
@@ -38,10 +38,10 @@ class DrugControllerIntegrationTest extends AbstractIntegrationTest {
 
 	@Test
 	void 검색어로_일반의약품을_찾으면_200과_1건_이상_반환한다() throws Exception {
-		mockMvc.perform(get("/api/v1/drugs").param("q", "타이레놀"))
+		mockMvc.perform(get("/api/v1/drugs").param("q", "테스트약품"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content.length()").value(greaterThanOrEqualTo(1)))
-			.andExpect(jsonPath("$.content[0].displayName").value("타이레놀 500mg"))
+			.andExpect(jsonPath("$.content[0].displayName").value("테스트약품 500mg"))
 			.andExpect(jsonPath("$.content[0].itemSeq").value("196800050"));
 	}
 
