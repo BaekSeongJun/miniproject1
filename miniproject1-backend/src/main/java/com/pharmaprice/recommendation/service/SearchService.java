@@ -1,6 +1,7 @@
 package com.pharmaprice.recommendation.service;
 
 import com.pharmaprice.drug.domain.Drug;
+import com.pharmaprice.drug.domain.DrugStatus;
 import com.pharmaprice.drug.repository.DrugRepository;
 import com.pharmaprice.pharmacy.domain.Region;
 import com.pharmaprice.pharmacy.repository.RegionRepository;
@@ -81,6 +82,9 @@ public class SearchService {
 
 		Drug drug = drugRepository.findById(drugId)
 			.orElseThrow(() -> new NoSuchElementException("DRUG_NOT_FOUND"));
+		if (drug.getStatus() != DrugStatus.APPROVED) {
+			throw new NoSuchElementException("DRUG_NOT_FOUND");
+		}
 
 		List<CandidateRowProjection> filtered = findWithinRadius(drugId, effLat, effLng, radius);
 

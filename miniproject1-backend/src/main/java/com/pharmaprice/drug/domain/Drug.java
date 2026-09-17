@@ -3,6 +3,8 @@ package com.pharmaprice.drug.domain;
 import com.pharmaprice.common.domain.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -51,9 +53,13 @@ public class Drug extends BaseTimeEntity {
 	@Column(name = "image_url", length = 500)
 	private String imageUrl;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	private DrugStatus status;
+
 	@Builder
 	public Drug(String itemSeq, String name, String displayName, String maker, String category, String form,
-			String packageUnit, Boolean otcFlag, Integer basePrice, String imageUrl) {
+			String packageUnit, Boolean otcFlag, Integer basePrice, String imageUrl, DrugStatus status) {
 		this.itemSeq = itemSeq;
 		this.name = name;
 		this.displayName = displayName;
@@ -64,5 +70,14 @@ public class Drug extends BaseTimeEntity {
 		this.otcFlag = otcFlag;
 		this.basePrice = basePrice;
 		this.imageUrl = imageUrl;
+		this.status = status != null ? status : DrugStatus.APPROVED;
+	}
+
+	public void approve() {
+		this.status = DrugStatus.APPROVED;
+	}
+
+	public void reject() {
+		this.status = DrugStatus.REJECTED;
 	}
 }

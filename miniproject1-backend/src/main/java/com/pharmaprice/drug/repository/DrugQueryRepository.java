@@ -20,7 +20,7 @@ public interface DrugQueryRepository extends Repository<Drug, Long> {
 			       COUNT(s.pharmacy_id) AS pharmacyCount
 			FROM drug d
 			LEFT JOIN pharmacy_drug_price_stat s ON s.drug_id = d.id
-			WHERE d.otc_flag = true
+			WHERE d.otc_flag = true AND d.status = 'APPROVED'
 			  AND (:q IS NULL OR d.display_name ILIKE '%' || :q || '%' OR d.name ILIKE '%' || :q || '%')
 			  AND (:category IS NULL OR d.category = :category)
 			GROUP BY d.id
@@ -29,7 +29,7 @@ public interface DrugQueryRepository extends Repository<Drug, Long> {
 		countQuery = """
 			SELECT COUNT(*)
 			FROM drug d
-			WHERE d.otc_flag = true
+			WHERE d.otc_flag = true AND d.status = 'APPROVED'
 			  AND (:q IS NULL OR d.display_name ILIKE '%' || :q || '%' OR d.name ILIKE '%' || :q || '%')
 			  AND (:category IS NULL OR d.category = :category)
 			""",

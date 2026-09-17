@@ -9,7 +9,8 @@ export interface UploadedFileResponse {
 
 export interface PriceReportCreateRequest {
   pharmacyId: number;
-  drugId: number;
+  drugId?: number;
+  newDrug?: { displayName: string; category: string };
   price: number;
   purchasedAt?: string;
   receiptFileId?: number;

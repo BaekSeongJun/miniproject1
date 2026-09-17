@@ -68,6 +68,11 @@ class PriceReportControllerIntegrationTest extends AbstractIntegrationTest {
 			+ purchasedAtField + "\"price\":" + price + "}";
 	}
 
+	private String newDrugReportJson(long pharmacyId, String displayName, String category, int price) {
+		return "{\"pharmacyId\":" + pharmacyId + ",\"newDrug\":{\"displayName\":\"" + displayName
+			+ "\",\"category\":\"" + category + "\"},\"price\":" + price + "}";
+	}
+
 	@Test
 	void 정상_제보시_201과_updatedStat_반영() throws Exception {
 		mockMvc.perform(post("/api/v1/price-reports")
@@ -183,6 +188,41 @@ class PriceReportControllerIntegrationTest extends AbstractIntegrationTest {
 		mockMvc.perform(get("/api/v1/price-reports").param("mine", "true"))
 			.andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+	}
+
+	@Test
+	void 신규_약품_제보시_201이고_PENDING_상태로_생성되며_검색에_노출되지_않는다() throws Exception {
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(newDrugReportJson(pharmacy.getId(), "신규약품테스트", "기타", 3000)))
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.updatedStat.repPrice").value(3000));
+
+		mockMvc.perform(get("/api/v1/drugs").param("q", "신규약품테스트"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(0));
+	}
+
+	@Test
+	void drugId와_newDrug_둘다_없으면_400_VALIDATION_FAILED() throws Exception {
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"pharmacyId\":" + pharmacy.getId() + ",\"price\":3000}"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+	}
+
+	@Test
+	void drugId와_newDrug_둘다_있으면_400_VALIDATION_FAILED() throws Exception {
+		mockMvc.perform(post("/api/v1/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"pharmacyId\":" + pharmacy.getId() + ",\"drugId\":" + otcDrug.getId()
+					+ ",\"newDrug\":{\"displayName\":\"중복입력\",\"category\":\"기타\"},\"price\":3000}"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
 	}
 
 	@Test

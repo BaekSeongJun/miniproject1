@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Paperclip, X } from "lucide-react";
 import { cn } from "cn";
-import { reportFormSchema, type ReportFormValues } from "@/lib/schemas/report";
+import { reportFormSchema, DRUG_CATEGORY_OPTIONS, type ReportFormValues } from "@/lib/schemas/report";
 import { apiFetch, uploadFile, ApiError } from "@/lib/api";
 import { updateDraft, resetDraft } from "@/lib/slices/report-draft-slice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
@@ -44,6 +44,7 @@ export default function NewReportPage() {
   const [warningDialog, setWarningDialog] = useState<{ warning: string; pharmacyId: number } | null>(null);
   const [pharmacy, setPharmacy] = useState<{ id: number; name: string } | null>(null);
   const [drug, setDrug] = useState<DrugSummary | null>(null);
+  const [newDrugMode, setNewDrugMode] = useState(false);
   const [receiptFile, setReceiptFile] = useState<UploadedFileResponse | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -159,6 +160,7 @@ export default function NewReportPage() {
         body: JSON.stringify({
           pharmacyId: values.pharmacyId,
           drugId: values.drugId,
+          newDrug: values.newDrug,
           price: values.price,
           purchasedAt: values.purchasedAt,
           receiptFileId: receiptFile?.id,
@@ -186,6 +188,10 @@ export default function NewReportPage() {
         }
         if (err.code === "DRUG_NOT_OTC") {
           setError("drugId", { message: "전문의약품은 제보할 수 없습니다." });
+          return;
+        }
+        if (err.code === "DRUG_PENDING_APPROVAL") {
+          setError("drugId", { message: "관리자 승인 대기 중인 약품입니다." });
           return;
         }
         if (err.code === "INVALID_DATE_RANGE") {
@@ -236,15 +242,75 @@ export default function NewReportPage() {
           <label htmlFor="drugId" className="text-sm font-medium">
             약품
           </label>
-          <DrugAutocomplete
-            id="drugId"
-            describedBy={errors.drugId ? "drugId-error" : undefined}
-            onSelect={(d) => {
-              setDrug(d);
-              setValue("drugId", d.id, { shouldValidate: true });
-            }}
-          />
-          {drug && <p className="text-xs text-muted-foreground">선택됨: {drug.displayName}</p>}
+          {!newDrugMode && (
+            <>
+              <DrugAutocomplete
+                id="drugId"
+                describedBy={errors.drugId ? "drugId-error" : undefined}
+                allowCreate
+                onSelect={(d) => {
+                  setDrug(d);
+                  setValue("drugId", d.id, { shouldValidate: true });
+                }}
+                onCreateNew={(displayName) => {
+                  setDrug(null);
+                  setValue("drugId", undefined);
+                  setValue("newDrug", { displayName, category: "" as never }, { shouldValidate: false });
+                  setNewDrugMode(true);
+                }}
+              />
+              {drug && <p className="text-xs text-muted-foreground">선택됨: {drug.displayName}</p>}
+            </>
+          )}
+
+          {newDrugMode && (
+            <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">새 약품 등록 (관리자 승인 후 반영됩니다)</span>
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                  onClick={() => {
+                    setNewDrugMode(false);
+                    setValue("newDrug", undefined);
+                  }}
+                >
+                  취소
+                </button>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="newDrugDisplayName" className="text-sm font-medium">
+                  약품명
+                </label>
+                <input
+                  id="newDrugDisplayName"
+                  className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                  {...register("newDrug.displayName")}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="newDrugCategory" className="text-sm font-medium">
+                  카테고리
+                </label>
+                <select
+                  id="newDrugCategory"
+                  className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                  defaultValue=""
+                  {...register("newDrug.category")}
+                >
+                  <option value="" disabled>
+                    선택해주세요
+                  </option>
+                  {DRUG_CATEGORY_OPTIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           {errors.drugId && (
             <p id="drugId-error" className="text-xs text-destructive">
               {errors.drugId.message}

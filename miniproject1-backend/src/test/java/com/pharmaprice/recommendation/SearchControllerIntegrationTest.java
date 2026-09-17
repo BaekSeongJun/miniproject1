@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.pharmaprice.AbstractIntegrationTest;
 import com.pharmaprice.drug.domain.Drug;
+import com.pharmaprice.drug.domain.DrugStatus;
 import com.pharmaprice.drug.repository.DrugRepository;
 import com.pharmaprice.pharmacy.domain.Pharmacy;
 import com.pharmaprice.pharmacy.domain.Region;
@@ -160,6 +161,26 @@ class SearchControllerIntegrationTest extends AbstractIntegrationTest {
 				.param("lng", String.valueOf(BASE_LNG)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.summary.resultCount").value(0));
+	}
+
+	@Test
+	void PENDING_약품은_통계가_있어도_404_DRUG_NOT_FOUND() throws Exception {
+		Drug pendingDrug = drugRepository.save(Drug.builder()
+			.name("승인대기약품").displayName("승인대기약품").category("기타").packageUnit("미상")
+			.otcFlag(true).status(DrugStatus.PENDING).build());
+		Pharmacy near = pharmacy("가온약국2", BASE_LAT, BASE_LNG);
+		priceStatRepository.save(PharmacyDrugPriceStat.builder()
+			.pharmacy(near).drug(pendingDrug)
+			.repPrice(3000).minPrice(3000).maxPrice(3000).avgPrice(3000)
+			.reportCount(1).lastReportedAt(LocalDate.now()).windowDays((short) 90)
+			.calculatedAt(Instant.now()).build());
+
+		mockMvc.perform(get("/api/v1/search")
+				.param("drugId", String.valueOf(pendingDrug.getId()))
+				.param("lat", String.valueOf(BASE_LAT))
+				.param("lng", String.valueOf(BASE_LNG)))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.code").value("DRUG_NOT_FOUND"));
 	}
 
 	@Test

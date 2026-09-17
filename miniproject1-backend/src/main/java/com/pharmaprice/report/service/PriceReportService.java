@@ -5,6 +5,8 @@ import com.pharmaprice.auth.repository.AppUserRepository;
 import com.pharmaprice.common.dto.PageResponse;
 import com.pharmaprice.common.exception.ApiException;
 import com.pharmaprice.drug.domain.Drug;
+import com.pharmaprice.drug.domain.DrugCategory;
+import com.pharmaprice.drug.domain.DrugStatus;
 import com.pharmaprice.drug.repository.DrugRepository;
 import com.pharmaprice.pharmacy.domain.Pharmacy;
 import com.pharmaprice.pharmacy.repository.PharmacyRepository;
@@ -57,8 +59,7 @@ public class PriceReportService {
 	public PriceReportResponse create(long userId, PriceReportCreateRequest request) {
 		Pharmacy pharmacy = pharmacyRepository.findById(request.pharmacyId())
 			.orElseThrow(() -> new NoSuchElementException("PHARMACY_NOT_FOUND"));
-		Drug drug = drugRepository.findById(request.drugId())
-			.orElseThrow(() -> new NoSuchElementException("DRUG_NOT_FOUND"));
+		Drug drug = resolveDrug(request);
 		if (!Boolean.TRUE.equals(drug.getOtcFlag())) {
 			throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "DRUG_NOT_OTC", "전문의약품은 제보할 수 없습니다.");
 		}
@@ -75,7 +76,7 @@ public class PriceReportService {
 				.orElseThrow(() -> new NoSuchElementException("UPLOADED_FILE_NOT_FOUND"))
 			: null;
 
-		FlagReason flagReason = detectOutlier(request.drugId(), request.price());
+		FlagReason flagReason = detectOutlier(drug.getId(), request.price());
 		boolean flagged = flagReason != null;
 
 		PriceReport report = PriceReport.builder()
@@ -99,7 +100,7 @@ public class PriceReportService {
 			throw new ApiException(HttpStatus.CONFLICT, "DUPLICATE_REPORT", "같은 약국·약품에 대해 오늘 이미 제보했습니다.");
 		}
 
-		Optional<PharmacyDrugPriceStat> stat = priceStatService.recalculate(request.pharmacyId(), request.drugId());
+		Optional<PharmacyDrugPriceStat> stat = priceStatService.recalculate(request.pharmacyId(), drug.getId());
 		user.increaseReportCount();
 
 		String warning = flagged
@@ -119,6 +120,36 @@ public class PriceReportService {
 		Page<PriceReportQueryRepository.PriceReportListProjection> result =
 			priceReportQueryRepository.search(pharmacyId, drugId, userId, pageable);
 		return PageResponse.of(result.map(PriceReportListItemResponse::from));
+	}
+
+	private Drug resolveDrug(PriceReportCreateRequest request) {
+		boolean hasDrugId = request.drugId() != null;
+		boolean hasNewDrug = request.newDrug() != null;
+		if (hasDrugId == hasNewDrug) {
+			throw new IllegalArgumentException("VALIDATION_FAILED: drugId 또는 newDrug 중 하나만 있어야 합니다");
+		}
+		if (hasNewDrug) {
+			String category = request.newDrug().category();
+			if (!DrugCategory.ALLOWED.contains(category)) {
+				throw new IllegalArgumentException("VALIDATION_FAILED: 허용되지 않는 category입니다: " + category);
+			}
+			Drug drug = Drug.builder()
+				.name(request.newDrug().displayName())
+				.displayName(request.newDrug().displayName())
+				.category(category)
+				.packageUnit("미상")
+				.otcFlag(true)
+				.status(DrugStatus.PENDING)
+				.build();
+			return drugRepository.save(drug);
+		}
+		Drug drug = drugRepository.findById(request.drugId())
+			.orElseThrow(() -> new NoSuchElementException("DRUG_NOT_FOUND"));
+		if (drug.getStatus() == DrugStatus.PENDING) {
+			throw new ApiException(
+				HttpStatus.UNPROCESSABLE_ENTITY, "DRUG_PENDING_APPROVAL", "관리자 승인 대기 중인 약품입니다.");
+		}
+		return drug;
 	}
 
 	private FlagReason detectOutlier(long drugId, int price) {

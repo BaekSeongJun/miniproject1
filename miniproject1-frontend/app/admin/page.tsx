@@ -38,6 +38,9 @@ export default function AdminDashboardPage() {
           <Link href="/admin/reports" className="hover:text-foreground">
             제보 관리 →
           </Link>
+          <Link href="/admin/drugs" className="hover:text-foreground">
+            약품 승인 →
+          </Link>
           <Link href="/admin/stats" className="hover:text-foreground">
             통계 →
           </Link>

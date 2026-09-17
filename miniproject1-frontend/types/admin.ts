@@ -39,6 +39,14 @@ export interface AdminPriceReportUpdateResponse {
   } | null;
 }
 
+export interface AdminDrugListItem {
+  id: number;
+  displayName: string;
+  category: string;
+  packageUnit: string | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+}
+
 export interface AdminRegionStatsRow {
   region: { code: string; sido: string; sigungu: string };
   drug: { id: number; displayName: string };

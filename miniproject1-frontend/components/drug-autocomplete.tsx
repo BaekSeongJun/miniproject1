@@ -24,10 +24,14 @@ export function DrugAutocomplete({
   id,
   describedBy,
   onSelect,
+  allowCreate,
+  onCreateNew,
 }: {
   id?: string;
   describedBy?: string;
   onSelect?: (drug: DrugSummary) => void;
+  allowCreate?: boolean;
+  onCreateNew?: (displayName: string) => void;
 }) {
   const router = useRouter();
   const location = useAppSelector((s) => s.location);
@@ -137,8 +141,24 @@ export function DrugAutocomplete({
           {isFetching && (
             <li className="px-4 py-3 text-sm text-muted-foreground">검색 중...</li>
           )}
-          {!isFetching && results.length === 0 && (
+          {!isFetching && results.length === 0 && !allowCreate && (
             <li className="px-4 py-3 text-sm text-muted-foreground">검색 결과가 없습니다.</li>
+          )}
+          {!isFetching && results.length === 0 && allowCreate && (
+            <li className="flex flex-col gap-2 px-4 py-3 text-sm text-muted-foreground">
+              <span>검색 결과가 없습니다.</span>
+              <button
+                type="button"
+                className="self-start text-sm font-medium text-primary underline-offset-2 hover:underline"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setOpen(false);
+                  onCreateNew?.(query);
+                }}
+              >
+                &ldquo;{query}&rdquo;(으)로 새 약품 등록하기
+              </button>
+            </li>
           )}
           {!isFetching &&
             results.map((drug, index) => (
