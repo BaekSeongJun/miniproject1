@@ -2,8 +2,14 @@
 
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
-import { formatPrice } from "@/lib/format";
-import type { PharmacyResult } from "@/types/search";
+
+export interface MapMarker {
+  id: number;
+  lat: number;
+  lng: number;
+  label: string;
+  highlight?: boolean;
+}
 
 type KakaoLatLng = { __brand: "KakaoLatLng" };
 interface KakaoOverlay {
@@ -37,12 +43,12 @@ declare global {
 
 export function PharmacyMap({
   center,
-  results,
+  markers,
   selectedId,
   onSelect,
 }: {
   center: { lat: number; lng: number };
-  results: PharmacyResult[];
+  markers: MapMarker[];
   selectedId: number | null;
   onSelect: (id: number) => void;
 }) {
@@ -86,14 +92,14 @@ export function PharmacyMap({
 
       const overlays = new Map<number, KakaoOverlay>();
       const overlayEls = new Map<number, HTMLDivElement>();
-      for (const result of results) {
-        const position = new window.kakao.maps.LatLng(result.pharmacy.lat, result.pharmacy.lng);
+      for (const marker of markers) {
+        const position = new window.kakao.maps.LatLng(marker.lat, marker.lng);
         bounds.extend(position);
 
         const el = document.createElement("div");
-        el.className = `kakao-price-overlay${result.recommended ? " kakao-price-overlay--top" : ""}`;
-        el.textContent = formatPrice(result.price.repPrice);
-        el.onclick = () => onSelectRef.current(result.pharmacy.id);
+        el.className = `kakao-price-overlay${marker.highlight ? " kakao-price-overlay--top" : ""}`;
+        el.textContent = marker.label;
+        el.onclick = () => onSelectRef.current(marker.id);
 
         const overlay = new window.kakao.maps.CustomOverlay({
           map,
@@ -102,17 +108,17 @@ export function PharmacyMap({
           content: el,
         });
 
-        overlays.set(result.pharmacy.id, overlay);
-        overlayEls.set(result.pharmacy.id, el);
+        overlays.set(marker.id, overlay);
+        overlayEls.set(marker.id, el);
       }
       overlaysRef.current = overlays;
       overlayElsRef.current = overlayEls;
 
-      if (results.length > 0) {
+      if (markers.length > 0) {
         map.setBounds(bounds);
       }
     });
-  }, [ready, center.lat, center.lng, results]);
+  }, [ready, center.lat, center.lng, markers]);
 
   useEffect(() => {
     for (const el of overlayElsRef.current.values()) {

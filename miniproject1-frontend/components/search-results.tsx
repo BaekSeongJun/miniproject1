@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PharmacyMap } from "@/components/pharmacy-map";
 import { PharmacyResultCard } from "@/components/pharmacy-result-card";
+import { formatPrice } from "@/lib/format";
 import type { SearchResult } from "@/types/search";
 
 export function SearchResults({ data }: { data: SearchResult }) {
@@ -17,7 +18,13 @@ export function SearchResults({ data }: { data: SearchResult }) {
     <div className="flex flex-col gap-4">
       <PharmacyMap
         center={{ lat: data.query.lat, lng: data.query.lng }}
-        results={data.results}
+        markers={data.results.map((r) => ({
+          id: r.pharmacy.id,
+          lat: r.pharmacy.lat,
+          lng: r.pharmacy.lng,
+          label: formatPrice(r.price.repPrice),
+          highlight: r.recommended,
+        }))}
         selectedId={selectedId}
         onSelect={selectAndScroll}
       />
