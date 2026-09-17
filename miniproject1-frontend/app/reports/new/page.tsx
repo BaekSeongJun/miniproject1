@@ -213,27 +213,43 @@ export default function NewReportPage() {
         noValidate
       >
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">약국</label>
+          <label htmlFor="pharmacyId" className="text-sm font-medium">
+            약국
+          </label>
           <PharmacyPicker
+            id="pharmacyId"
+            describedBy={errors.pharmacyId ? "pharmacyId-error" : undefined}
             value={pharmacy}
             onChange={(p) => {
               setPharmacy(p);
               setValue("pharmacyId", p.id, { shouldValidate: true });
             }}
           />
-          {errors.pharmacyId && <p className="text-xs text-destructive">{errors.pharmacyId.message}</p>}
+          {errors.pharmacyId && (
+            <p id="pharmacyId-error" className="text-xs text-destructive">
+              {errors.pharmacyId.message}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">약품</label>
+          <label htmlFor="drugId" className="text-sm font-medium">
+            약품
+          </label>
           <DrugAutocomplete
+            id="drugId"
+            describedBy={errors.drugId ? "drugId-error" : undefined}
             onSelect={(d) => {
               setDrug(d);
               setValue("drugId", d.id, { shouldValidate: true });
             }}
           />
           {drug && <p className="text-xs text-muted-foreground">선택됨: {drug.displayName}</p>}
-          {errors.drugId && <p className="text-xs text-destructive">{errors.drugId.message}</p>}
+          {errors.drugId && (
+            <p id="drugId-error" className="text-xs text-destructive">
+              {errors.drugId.message}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -248,6 +264,8 @@ export default function NewReportPage() {
                 id="price"
                 inputMode="numeric"
                 autoComplete="off"
+                aria-invalid={!!errors.price}
+                aria-describedby={errors.price ? "price-error" : undefined}
                 className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 placeholder="예: 2,800"
                 value={field.value != null ? field.value.toLocaleString("ko-KR") : ""}
@@ -258,7 +276,11 @@ export default function NewReportPage() {
               />
             )}
           />
-          {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
+          {errors.price && (
+            <p id="price-error" className="text-xs text-destructive">
+              {errors.price.message}
+            </p>
+          )}
         </div>
 
         <button
@@ -279,10 +301,16 @@ export default function NewReportPage() {
                 id="purchasedAt"
                 type="date"
                 max={todayString()}
+                aria-invalid={!!errors.purchasedAt}
+                aria-describedby={errors.purchasedAt ? "purchasedAt-error" : undefined}
                 className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 {...register("purchasedAt")}
               />
-              {errors.purchasedAt && <p className="text-xs text-destructive">{errors.purchasedAt.message}</p>}
+              {errors.purchasedAt && (
+                <p id="purchasedAt-error" className="text-xs text-destructive">
+                  {errors.purchasedAt.message}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -292,15 +320,23 @@ export default function NewReportPage() {
               <input
                 id="memo"
                 maxLength={200}
+                aria-invalid={!!errors.memo}
+                aria-describedby={errors.memo ? "memo-error" : undefined}
                 className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 placeholder="예: 1+1 행사 아님, 정가"
                 {...register("memo")}
               />
-              {errors.memo && <p className="text-xs text-destructive">{errors.memo.message}</p>}
+              {errors.memo && (
+                <p id="memo-error" className="text-xs text-destructive">
+                  {errors.memo.message}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">영수증 사진</label>
+              <label id="receipt-label" className="text-sm font-medium">
+                영수증 사진
+              </label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -313,6 +349,7 @@ export default function NewReportPage() {
                 <div
                   role="button"
                   tabIndex={0}
+                  aria-labelledby="receipt-label"
                   onClick={() => fileInputRef.current?.click()}
                   onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
                   onDragOver={(e) => {
@@ -367,7 +404,11 @@ export default function NewReportPage() {
           </div>
         )}
 
-        {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
+        {errors.root && (
+          <p role="alert" className="text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
 
         <Button type="submit" disabled={isSubmitting || mutation.isPending} className="mt-2 w-full">
           {isSubmitting || mutation.isPending ? "제보 중..." : "제보하기"}

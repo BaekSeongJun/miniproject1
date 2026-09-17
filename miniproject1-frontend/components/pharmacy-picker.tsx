@@ -22,9 +22,13 @@ interface PageResponse<T> {
 }
 
 export function PharmacyPicker({
+  id,
+  describedBy,
   value,
   onChange,
 }: {
+  id?: string;
+  describedBy?: string;
   value: { id: number; name: string } | null;
   onChange: (pharmacy: { id: number; name: string }) => void;
 }) {
@@ -101,9 +105,11 @@ export function PharmacyPicker({
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <input
+          id={id}
           role="combobox"
           aria-expanded={open}
           aria-controls={listboxId}
+          aria-describedby={describedBy}
           autoComplete="off"
           className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-10 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           placeholder="약국 이름을 입력하세요"

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { apiFetch, ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { toUserMessage } from "@/lib/error-message";
 import { DistanceBadge } from "@/components/distance-badge";
 import { BusinessHours } from "@/components/business-hours";
 import { DrugPriceRow } from "@/components/drug-price-row";
@@ -26,10 +28,10 @@ export default async function PharmacyDetailPage(props: PageProps<"/pharmacies/[
       cache: "no-store",
     });
   } catch (err) {
-    const message = err instanceof ApiError && err.status === 404
-      ? "약국 정보를 찾을 수 없습니다."
-      : "약국 정보를 불러오지 못했습니다.";
-    return <EmptyState message={message} />;
+    if (err instanceof ApiError && err.status === 404) {
+      return <EmptyState message="약국 정보를 찾을 수 없습니다." />;
+    }
+    return <ErrorState message={toUserMessage(err, "약국 정보를 불러오지 못했습니다.")} />;
   }
 
   const directionsUrl = `https://map.kakao.com/link/to/${encodeURIComponent(pharmacy.name)},${pharmacy.lat},${pharmacy.lng}`;

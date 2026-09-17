@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
 import { SearchResults } from "@/components/search-results";
 import { SortToggle } from "@/components/sort-toggle";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { toUserMessage } from "@/lib/error-message";
 import type { SearchResult } from "@/types/search";
 
 export default async function SearchPage(props: PageProps<"/search">) {
@@ -31,8 +33,7 @@ export default async function SearchPage(props: PageProps<"/search">) {
   try {
     data = await apiFetch<SearchResult>(`/api/v1/search?${params.toString()}`, { cache: "no-store" });
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : "검색 결과를 불러오지 못했습니다.";
-    return <EmptyState message={message} />;
+    return <ErrorState message={toUserMessage(err, "검색 결과를 불러오지 못했습니다.")} />;
   }
 
   return (

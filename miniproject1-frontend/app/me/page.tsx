@@ -5,8 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { useAppSelector } from "@/lib/hooks";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
+import { toUserMessage } from "@/lib/error-message";
 import type { PriceReportListItem } from "@/types/report";
 
 interface PageResponse<T> {
@@ -24,7 +27,7 @@ function statusLabel(report: PriceReportListItem): { text: string; className: st
 export default function MyReportsPage() {
   const auth = useAppSelector((s) => s.auth);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["price-reports", "mine"],
     queryFn: () => apiFetch<PageResponse<PriceReportListItem>>("/api/v1/price-reports?mine=true&size=50", { auth: true }),
     enabled: auth.status === "authenticated",
@@ -41,7 +44,9 @@ export default function MyReportsPage() {
         {data && <p className="text-sm text-muted-foreground">총 {data.totalElements}건</p>}
       </div>
 
-      {isLoading && <p className="py-12 text-center text-sm text-muted-foreground">불러오는 중...</p>}
+      {isLoading && <LoadingSkeleton rows={4} />}
+
+      {isError && <ErrorState message={toUserMessage(error, "내 제보 목록을 불러오지 못했습니다.")} onRetry={() => refetch()} />}
 
       {data && data.content.length === 0 && (
         <div className="flex flex-col items-center gap-4">

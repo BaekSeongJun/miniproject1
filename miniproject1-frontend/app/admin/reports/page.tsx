@@ -5,7 +5,10 @@ import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { useRequireAdmin } from "@/hooks/use-require-admin";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { Button } from "@/components/ui/button";
+import { toUserMessage } from "@/lib/error-message";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +30,7 @@ export default function AdminReportsPage() {
   const queryClient = useQueryClient();
   const [target, setTarget] = useState<AdminPriceReportListItem | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin", "price-reports", "flagged"],
     queryFn: () =>
       apiFetch<PageResponse<AdminPriceReportListItem>>(
@@ -52,7 +55,7 @@ export default function AdminReportsPage() {
     },
   });
 
-  if (!ready) return null;
+  if (!ready) return <LoadingSkeleton rows={5} />;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6">
@@ -61,7 +64,11 @@ export default function AdminReportsPage() {
         {data && <p className="text-sm text-muted-foreground">이상치 플래그 {data.totalElements}건</p>}
       </div>
 
-      {isLoading && <p className="py-12 text-center text-sm text-muted-foreground">불러오는 중...</p>}
+      {isLoading && <LoadingSkeleton rows={5} />}
+
+      {isError && (
+        <ErrorState message={toUserMessage(error, "제보 목록을 불러오지 못했습니다.")} onRetry={() => refetch()} />
+      )}
 
       {data && data.content.length === 0 && <EmptyState message="이상치로 플래그된 제보가 없습니다." />}
 

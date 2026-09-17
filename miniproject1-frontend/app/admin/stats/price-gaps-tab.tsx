@@ -2,16 +2,22 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { ErrorState } from "@/components/error-state";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { formatPrice } from "@/lib/format";
+import { toUserMessage } from "@/lib/error-message";
 import type { AdminPriceGaps } from "@/types/admin";
 
 export function PriceGapsTab() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin", "stats", "price-gaps"],
     queryFn: () => apiFetch<AdminPriceGaps>("/api/v1/admin/stats/price-gaps?limit=10", { auth: true }),
   });
 
-  if (isLoading) return <p className="py-12 text-center text-sm text-muted-foreground">불러오는 중...</p>;
+  if (isLoading) return <LoadingSkeleton rows={5} />;
+  if (isError) {
+    return <ErrorState message={toUserMessage(error, "가격 격차 통계를 불러오지 못했습니다.")} onRetry={() => refetch()} />;
+  }
   if (!data || data.rows.length === 0) {
     return <p className="py-12 text-center text-sm text-muted-foreground">표시할 데이터가 없습니다.</p>;
   }

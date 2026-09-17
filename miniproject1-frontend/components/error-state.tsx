@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 
 export function ErrorState({
@@ -5,12 +7,12 @@ export function ErrorState({
   onRetry,
 }: {
   message?: string;
-  onRetry: () => void;
+  onRetry?: () => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
       <p className="text-sm text-muted-foreground">{message}</p>
-      <Button variant="outline" onClick={onRetry}>
+      <Button variant="outline" onClick={onRetry ?? (() => window.location.reload())}>
         다시 시도
       </Button>
     </div>

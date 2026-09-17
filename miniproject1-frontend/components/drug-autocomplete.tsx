@@ -20,7 +20,15 @@ interface PageResponse<T> {
 
 const POPULAR_DRUGS = ["타이레놀", "게보린", "판콜에이", "베아제", "부루펜", "이지엔6", "판피린", "훼스탈"];
 
-export function DrugAutocomplete({ onSelect }: { onSelect?: (drug: DrugSummary) => void }) {
+export function DrugAutocomplete({
+  id,
+  describedBy,
+  onSelect,
+}: {
+  id?: string;
+  describedBy?: string;
+  onSelect?: (drug: DrugSummary) => void;
+}) {
   const router = useRouter();
   const location = useAppSelector((s) => s.location);
   const listboxId = useId();
@@ -100,10 +108,12 @@ export function DrugAutocomplete({ onSelect }: { onSelect?: (drug: DrugSummary) 
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground md:left-4 md:size-5" />
         <input
+          id={id}
           role="combobox"
           aria-expanded={open}
           aria-controls={listboxId}
           aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined}
+          aria-describedby={describedBy}
           autoComplete="off"
           className="h-12 w-full rounded-lg border border-border bg-background pl-10 pr-4 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:h-14 md:pl-12 md:text-lg"
           placeholder="약품 이름을 입력하세요 (예: 타이레놀)"

@@ -57,10 +57,16 @@ export default function SignupPage() {
             id="email"
             type="email"
             autoComplete="email"
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "email-error" : undefined}
             className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             {...register("email")}
           />
-          {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+          {errors.email && (
+            <p id="email-error" className="text-xs text-destructive">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -71,10 +77,16 @@ export default function SignupPage() {
             id="password"
             type="password"
             autoComplete="new-password"
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "password-error" : undefined}
             className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             {...register("password")}
           />
-          {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+          {errors.password && (
+            <p id="password-error" className="text-xs text-destructive">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -84,13 +96,23 @@ export default function SignupPage() {
           <input
             id="nickname"
             autoComplete="nickname"
+            aria-invalid={!!errors.nickname}
+            aria-describedby={errors.nickname ? "nickname-error" : undefined}
             className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             {...register("nickname")}
           />
-          {errors.nickname && <p className="text-xs text-destructive">{errors.nickname.message}</p>}
+          {errors.nickname && (
+            <p id="nickname-error" className="text-xs text-destructive">
+              {errors.nickname.message}
+            </p>
+          )}
         </div>
 
-        {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
+        {errors.root && (
+          <p role="alert" className="text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
 
         <Button type="submit" disabled={isSubmitting} className="mt-2 w-full">
           {isSubmitting ? "가입 중..." : "가입하기"}

@@ -5,13 +5,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { apiFetch } from "@/lib/api";
 import { DrugAutocomplete, type DrugSummary } from "@/components/drug-autocomplete";
+import { ErrorState } from "@/components/error-state";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { formatPrice } from "@/lib/format";
+import { toUserMessage } from "@/lib/error-message";
 import type { AdminDrugStats } from "@/types/admin";
 
 export function DrugStatsTab() {
   const [drug, setDrug] = useState<DrugSummary | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin", "stats", "drug", drug?.id],
     queryFn: () => apiFetch<AdminDrugStats>(`/api/v1/admin/stats/drugs/${drug!.id}`, { auth: true }),
     enabled: drug !== null,
@@ -23,7 +26,11 @@ export function DrugStatsTab() {
 
       {!drug && <p className="py-12 text-center text-sm text-muted-foreground">약품을 선택하면 가격 분포를 볼 수 있습니다.</p>}
 
-      {drug && isLoading && <p className="py-12 text-center text-sm text-muted-foreground">불러오는 중...</p>}
+      {drug && isLoading && <LoadingSkeleton rows={5} />}
+
+      {drug && isError && (
+        <ErrorState message={toUserMessage(error, "약품 통계를 불러오지 못했습니다.")} onRetry={() => refetch()} />
+      )}
 
       {data && (
         <>

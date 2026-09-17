@@ -6,7 +6,10 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useRegions } from "@/hooks/use-regions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ErrorState } from "@/components/error-state";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { formatPrice } from "@/lib/format";
+import { toUserMessage } from "@/lib/error-message";
 import type { AdminRegionStats, AdminRegionStatsRow } from "@/types/admin";
 
 type SortKey = "avgPrice" | "minPrice" | "maxPrice" | "pharmacyCount" | "reportCount";
@@ -24,7 +27,7 @@ export function RegionStatsTab() {
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "reportCount", desc: true });
   const { data: regionGroups } = useRegions();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin", "stats", "regions", sido],
     queryFn: () =>
       apiFetch<AdminRegionStats>(
@@ -46,7 +49,7 @@ export function RegionStatsTab() {
   return (
     <div className="flex flex-col gap-4">
       <Select value={sido} onValueChange={setSido}>
-        <SelectTrigger>
+        <SelectTrigger aria-label="시도 필터">
           <SelectValue placeholder="전체 시도" />
         </SelectTrigger>
         <SelectContent>
@@ -59,7 +62,11 @@ export function RegionStatsTab() {
         </SelectContent>
       </Select>
 
-      {isLoading && <p className="py-12 text-center text-sm text-muted-foreground">불러오는 중...</p>}
+      {isLoading && <LoadingSkeleton rows={5} />}
+
+      {isError && (
+        <ErrorState message={toUserMessage(error, "지역별 통계를 불러오지 못했습니다.")} onRetry={() => refetch()} />
+      )}
 
       {data && (
         <div className="overflow-x-auto rounded-lg border">
