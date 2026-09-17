@@ -21,6 +21,9 @@ export function Header() {
           {status === "authenticated" && user ? (
             <div className="flex items-center gap-3 text-sm">
               <span className="text-muted-foreground">{user.nickname}님</span>
+              <Link href="/me" className="text-muted-foreground hover:text-foreground">
+                내 제보
+              </Link>
               <button
                 type="button"
                 onClick={() => dispatch(logout())}
