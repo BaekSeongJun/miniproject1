@@ -24,6 +24,11 @@ export function Header() {
               <Link href="/me" className="text-muted-foreground hover:text-foreground">
                 내 제보
               </Link>
+              {user.role === "ADMIN" && (
+                <Link href="/admin" className="text-muted-foreground hover:text-foreground">
+                  관리자
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => dispatch(logout())}
