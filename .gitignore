@@ -17,6 +17,10 @@ uploads/
 # 시드 생성 스크립트
 tools/seed-generator/__pycache__/
 
+# 전국 확장 후 V3가 수백 MB로 커져 GitHub 파일 크기 제한에 걸린다.
+# build_price_seed.py로 로컬에서 재생성한다 (README 참고).
+miniproject1-backend/src/main/resources/db/migration/V3__seed_prices.sql
+
 # IDE
 .idea/
 .vscode/

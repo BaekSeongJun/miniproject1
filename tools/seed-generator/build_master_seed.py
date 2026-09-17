@@ -32,9 +32,13 @@ OUT_SQL = ROOT / "miniproject1-backend/src/main/resources/db/migration/V2__seed_
 PHARMACY_ENDPOINT = "https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyListInfoInqire"
 DRUG_ENDPOINT = "https://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"
 
-TARGET_SIDO = ["서울특별시", "경기도"]
-PHARMACY_MIN, PHARMACY_MAX = 300, 500
-DRUG_MIN, DRUG_MAX = 30, 50
+TARGET_SIDO = [
+    "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시",
+    "세종특별자치시", "경기도", "강원특별자치도", "충청북도", "충청남도", "전북특별자치도", "전라남도",
+    "경상북도", "경상남도", "제주특별자치도",
+]
+PHARMACY_MIN = 1000
+DRUG_MIN = 30
 
 RANDOM_SEED = 20260915
 
@@ -163,7 +167,7 @@ def build_regions_and_pharmacies(service_key: str) -> tuple[list[dict], list[dic
     pharmacies = []
     for sido in TARGET_SIDO:
         raw_items = fetch_all_items(
-            PHARMACY_ENDPOINT, service_key, {"Q0": sido}, DATA_DIR / f"pharmacy_raw_{sido}.xml", max_items=1000
+            PHARMACY_ENDPOINT, service_key, {"Q0": sido}, DATA_DIR / f"pharmacy_raw_{sido}.xml"
         )
         for it in raw_items:
             lat = field(it, PHARMACY_FIELD_SYNONYMS["lat"])
@@ -191,23 +195,17 @@ def build_regions_and_pharmacies(service_key: str) -> tuple[list[dict], list[dic
             "실제 응답과 다를 수 있습니다. data/pharmacy_raw.xml 을 열어 실제 태그명을 확인하세요."
         )
 
-    # 시군구당 상한을 둬서 여러 시군구가 골고루 섞이게 하되(region 다양성),
-    # 시군구당 최소치도 둬서 반경 2km 안에 5개 이상 잡히는 밀집도는 유지한다.
+    # 시군구당 최소치를 둬서 반경 2km 안에 5개 이상 잡히는 밀집도가 안 나올 동네는 미리 뺀다.
+    # (상한은 없다 — 전국 데이터를 전부 채택하는 게 목표라 시군구별로 자를 이유가 없다.)
     by_sigungu: dict[str, list[dict]] = defaultdict(list)
     for p in pharmacies:
         by_sigungu[p["sigungu"]].append(p)
 
-    SIGUNGU_MIN, SIGUNGU_MAX = 15, 20
-    random.seed(RANDOM_SEED)
-    ordered_sigungu = [s for s in sorted(by_sigungu, key=lambda k: -len(by_sigungu[k])) if len(by_sigungu[s]) >= SIGUNGU_MIN]
-    candidate_pool: list[dict] = []
-    for sigungu in ordered_sigungu:
-        group = by_sigungu[sigungu]
-        random.shuffle(group)
-        candidate_pool.extend(group[:SIGUNGU_MAX])
+    SIGUNGU_MIN = 15
+    candidate_pool: list[dict] = [
+        p for sigungu, group in by_sigungu.items() if len(group) >= SIGUNGU_MIN for p in group
+    ]
 
-    # 시군구 경계만으로는 "시군구 안이지만 변두리라 반경 2km 안이 텅 빈" 약국을 못 거른다.
-    # 실제 haversine 거리로 후보군 내 이웃 수를 세서, 고립된(반경 2km 안에 5개 미만) 약국은 뺀다.
     def haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
         R = 6_371_000
         dlat, dlng = math.radians(lat2 - lat1), math.radians(lng2 - lng1)
@@ -215,34 +213,38 @@ def build_regions_and_pharmacies(service_key: str) -> tuple[list[dict], list[dic
              + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2)
         return R * 2 * math.asin(math.sqrt(a))
 
-    # ponytail: O(n^2) 전수 비교. 후보 풀이 수천 건으로 커지면 느려지므로, 그때는 공간 격자 인덱싱으로 바꾼다.
-    # "채택된 집합 안에서" 이웃 수를 반복 재계산한다 — 500건으로 자르는 순간 이웃 일부가 빠져나가
-    # 밀집도가 다시 깨질 수 있어(경계 효과), 안정될 때까지(또는 최대 횟수까지) 미달분을 걸러내고 재보충한다.
-    NEIGHBOR_MIN = 5  # 완료 판정: 임의 좌표 기준 반경 2km 내 약국 5개 이상
-    working_set = sorted(
-        candidate_pool,
-        key=lambda p: -sum(1 for q in candidate_pool if haversine_m(p["lat"], p["lng"], q["lat"], q["lng"]) <= 2000),
-    )[:PHARMACY_MAX]
-    working_ids = {id(p) for p in working_set}
-    leftover = [p for p in candidate_pool if id(p) not in working_ids]
+    # 공간 격자 인덱싱: 위도 1도 ≈ 111km이므로 0.02도 ≈ 약 2.2km 셀로 나누면,
+    # 반경 2km 이웃은 항상 자기 셀 + 인접 8개 셀(3x3) 안에 있다. 전국 규모(수만 건)에서
+    # haversine 전수비교(O(n^2))를 피하기 위한 장치 — 이전엔 500건 캡이 있어 전수비교로도 버텼다.
+    CELL = 0.02
 
-    for _ in range(10):
-        counts = {
-            id(p): sum(1 for q in working_set if haversine_m(p["lat"], p["lng"], q["lat"], q["lng"]) <= 2000)
-            for p in working_set
-        }
-        deficient_ids = {id(p) for p in working_set if counts[id(p)] < NEIGHBOR_MIN}
-        if not deficient_ids:
+    def cell_key(p: dict) -> tuple[int, int]:
+        return (math.floor(p["lat"] / CELL), math.floor(p["lng"] / CELL))
+
+    def count_neighbors(target: dict, grid: dict[tuple[int, int], list[dict]]) -> int:
+        cy, cx = cell_key(target)
+        count = 0
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                for q in grid.get((cy + dy, cx + dx), ()):
+                    if q is not target and haversine_m(target["lat"], target["lng"], q["lat"], q["lng"]) <= 2000:
+                        count += 1
+        return count
+
+    # 시군구 경계만으로는 "시군구 안이지만 변두리라 반경 2km 안이 텅 빈" 약국을 못 거른다.
+    # 격자 이웃 수가 부족한 약국을 빼면 남은 약국들의 이웃 수도 줄어들 수 있어(경계 효과),
+    # 더 빠지는 게 없을 때까지 반복한다. 상한이 없으므로 재보충은 필요 없다.
+    NEIGHBOR_MIN = 5  # 완료 판정: 임의 좌표 기준 반경 2km 내 약국 5개 이상
+    working_set = candidate_pool
+    while True:
+        grid: dict[tuple[int, int], list[dict]] = defaultdict(list)
+        for p in working_set:
+            grid[cell_key(p)].append(p)
+        deficient = [p for p in working_set if count_neighbors(p, grid) < NEIGHBOR_MIN]
+        if not deficient:
             break
+        deficient_ids = {id(p) for p in deficient}
         working_set = [p for p in working_set if id(p) not in deficient_ids]
-        # 뺀 만큼 밀집도가 가장 높은 지역(=이미 풍부한 이웃) 근처 후보로 채워 총량(PHARMACY_MAX)을 유지한다
-        leftover.sort(
-            key=lambda p: -sum(1 for q in working_set if haversine_m(p["lat"], p["lng"], q["lat"], q["lng"]) <= 2000)
-        )
-        refill = leftover[: len(deficient_ids)]
-        refill_ids = {id(p) for p in refill}
-        working_set.extend(refill)
-        leftover = [p for p in leftover if id(p) not in refill_ids]
 
     sampled = working_set
 
@@ -301,7 +303,7 @@ def guess_display_name(name: str) -> str:
 
 def build_drugs(service_key: str) -> list[dict]:
     print("의약품 데이터 수집 중...")
-    raw_items = fetch_all_items(DRUG_ENDPOINT, service_key, {}, DATA_DIR / "drug_raw.xml", max_items=300)
+    raw_items = fetch_all_items(DRUG_ENDPOINT, service_key, {}, DATA_DIR / "drug_raw.xml")
 
     random.seed(RANDOM_SEED)  # base_price 재현성 (약국 샘플링과 별개로 고정)
     seen_names: set[str] = set()
@@ -328,8 +330,6 @@ def build_drugs(service_key: str) -> list[dict]:
                 "image_url": field(it, DRUG_FIELD_SYNONYMS["image"]),
             }
         )
-        if len(drugs) >= DRUG_MAX:
-            break
 
     if len(drugs) < DRUG_MIN:
         sys.exit(
