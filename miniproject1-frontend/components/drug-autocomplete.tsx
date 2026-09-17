@@ -8,7 +8,7 @@ import { apiFetch } from "@/lib/api";
 import { useAppSelector } from "@/lib/hooks";
 import { cn } from "cn";
 
-interface DrugSummary {
+export interface DrugSummary {
   id: number;
   displayName: string;
   packageUnit: string | null;
@@ -20,7 +20,7 @@ interface PageResponse<T> {
 
 const POPULAR_DRUGS = ["타이레놀", "게보린", "판콜에이", "베아제", "부루펜", "이지엔6", "판피린", "훼스탈"];
 
-export function DrugAutocomplete() {
+export function DrugAutocomplete({ onSelect }: { onSelect?: (drug: DrugSummary) => void }) {
   const router = useRouter();
   const location = useAppSelector((s) => s.location);
   const listboxId = useId();
@@ -69,7 +69,11 @@ export function DrugAutocomplete() {
   function selectDrug(drug: DrugSummary) {
     setQuery(drug.displayName);
     setOpen(false);
-    goToSearch(drug.id);
+    if (onSelect) {
+      onSelect(drug);
+    } else {
+      goToSearch(drug.id);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { apiFetch, ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
 import { DistanceBadge } from "@/components/distance-badge";
@@ -71,7 +72,7 @@ export default async function PharmacyDetailPage(props: PageProps<"/pharmacies/[
       <section>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold">취급 약품 가격</h2>
-          <Button size="sm" disabled>
+          <Button size="sm" nativeButton={false} render={<Link href={`/reports/new?pharmacyId=${pharmacy.id}`} />}>
             가격 제보하기
           </Button>
         </div>
