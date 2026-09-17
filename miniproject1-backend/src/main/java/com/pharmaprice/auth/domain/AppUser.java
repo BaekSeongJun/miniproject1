@@ -62,4 +62,8 @@ public class AppUser extends BaseTimeEntity {
 	public void increaseReportCount() {
 		this.reportCount = this.reportCount + 1;
 	}
+
+	public void decreaseReportCount() {
+		this.reportCount = Math.max(0, this.reportCount - 1);
+	}
 }

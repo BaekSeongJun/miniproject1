@@ -93,4 +93,16 @@ public class PriceReport extends BaseTimeEntity {
 		this.receiptFile = receiptFile;
 		this.memo = memo;
 	}
+
+	public void changeStatus(ReportStatus status) {
+		this.status = status;
+	}
+
+	public void changeFlagged(Boolean flagged) {
+		this.flagged = flagged;
+	}
+
+	public void changeFlagReason(FlagReason flagReason) {
+		this.flagReason = flagReason;
+	}
 }

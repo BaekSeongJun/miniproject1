@@ -61,4 +61,58 @@ public interface PriceReportQueryRepository extends Repository<PriceReport, Long
 		Boolean getHasReceipt();
 		Instant getCreatedAt();
 	}
+
+	// 관리자 목록: 일반 목록과 달리 상태/삭제 필터 없이 전체 노출하고, reporter.id/email·flagReason·receiptFileId를 추가로 포함한다.
+	@Query(
+		value = """
+			SELECT r.id AS id,
+			       p.id AS pharmacyId, p.name AS pharmacyName,
+			       d.id AS drugId, d.display_name AS drugDisplayName, d.package_unit AS drugPackageUnit,
+			       r.price AS price, r.purchased_at AS purchasedAt,
+			       u.id AS reporterId, u.nickname AS reporterNickname, u.email AS reporterEmail,
+			       r.source AS source, r.status AS status, r.flagged AS flagged, r.flag_reason AS flagReason,
+			       r.receipt_file_id AS receiptFileId,
+			       r.created_at AS createdAt
+			FROM price_report r
+			JOIN pharmacy p ON p.id = r.pharmacy_id
+			JOIN drug d ON d.id = r.drug_id
+			LEFT JOIN app_user u ON u.id = r.user_id
+			WHERE (:flagged IS NULL OR r.flagged = :flagged)
+			  AND (:status IS NULL OR r.status = :status)
+			  AND (:pharmacyId IS NULL OR r.pharmacy_id = :pharmacyId)
+			  AND (:drugId IS NULL OR r.drug_id = :drugId)
+			ORDER BY r.created_at DESC
+			""",
+		countQuery = """
+			SELECT COUNT(*)
+			FROM price_report r
+			WHERE (:flagged IS NULL OR r.flagged = :flagged)
+			  AND (:status IS NULL OR r.status = :status)
+			  AND (:pharmacyId IS NULL OR r.pharmacy_id = :pharmacyId)
+			  AND (:drugId IS NULL OR r.drug_id = :drugId)
+			""",
+		nativeQuery = true)
+	Page<AdminPriceReportListProjection> searchForAdmin(
+		@Param("flagged") Boolean flagged, @Param("status") String status,
+		@Param("pharmacyId") Long pharmacyId, @Param("drugId") Long drugId, Pageable pageable);
+
+	interface AdminPriceReportListProjection {
+		Long getId();
+		Long getPharmacyId();
+		String getPharmacyName();
+		Long getDrugId();
+		String getDrugDisplayName();
+		String getDrugPackageUnit();
+		Integer getPrice();
+		LocalDate getPurchasedAt();
+		Long getReporterId();
+		String getReporterNickname();
+		String getReporterEmail();
+		String getSource();
+		String getStatus();
+		Boolean getFlagged();
+		String getFlagReason();
+		Long getReceiptFileId();
+		Instant getCreatedAt();
+	}
 }
