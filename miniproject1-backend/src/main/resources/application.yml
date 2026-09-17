@@ -21,6 +21,10 @@ spring:
       max-file-size: 5MB
       max-request-size: 6MB
 
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [traceId=%X{traceId}] %logger{36} - %msg%n"
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

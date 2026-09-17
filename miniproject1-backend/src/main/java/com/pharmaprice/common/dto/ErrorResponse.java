@@ -1,7 +1,9 @@
 package com.pharmaprice.common.dto;
 
+import com.pharmaprice.common.logging.TraceIdFilter;
 import java.time.OffsetDateTime;
 import java.util.List;
+import org.slf4j.MDC;
 
 public record ErrorResponse(
 	String code, String message, List<FieldError> fieldErrors, String traceId, OffsetDateTime timestamp
@@ -14,7 +16,7 @@ public record ErrorResponse(
 
 	public static ErrorResponse of(String code, String message, List<FieldError> fieldErrors) {
 		return new ErrorResponse(
-			code, message, fieldErrors, java.util.UUID.randomUUID().toString().substring(0, 8),
+			code, message, fieldErrors, MDC.get(TraceIdFilter.TRACE_ID_KEY),
 			OffsetDateTime.now(java.time.ZoneId.of("Asia/Seoul")));
 	}
 }
