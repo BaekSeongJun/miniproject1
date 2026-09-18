@@ -47,11 +47,19 @@ public class SearchService {
 	private final SearchQueryRepository searchQueryRepository;
 	private final DistanceCalculator distanceCalculator;
 	private final ScoreCalculator scoreCalculator;
+	private final SearchLogService searchLogService;
 
 	public SearchResponse search(Long drugId, Double lat, Double lng, String regionCode,
 			int radius, String sort, int limit) {
 		if (drugId == null) {
 			throw new IllegalArgumentException("VALIDATION_FAILED: drugId is required");
+		}
+		// REQUIRES_NEW 트랜잭션의 커밋 실패(UnexpectedRollbackException 등)는 logSafely() 내부
+		// try/catch로 못 막고 호출자까지 전파되므로, 여기서도 한 번 더 막아 검색 자체를 지킨다.
+		try {
+			searchLogService.logSafely(drugId);
+		} catch (Exception e) {
+			log.warn("search log call failed drugId={}", drugId, e);
 		}
 		boolean hasCoord = lat != null && lng != null;
 		boolean hasRegion = regionCode != null && !regionCode.isBlank();

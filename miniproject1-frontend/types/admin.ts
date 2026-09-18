@@ -57,10 +57,6 @@ export interface AdminRegionStatsRow {
   reportCount: number;
 }
 
-export interface AdminRegionStats {
-  rows: AdminRegionStatsRow[];
-}
-
 export interface AdminDrugStats {
   drug: { id: number; displayName: string; packageUnit: string | null };
   distribution: { bucketFrom: number; bucketTo: number; count: number }[];
@@ -78,4 +74,54 @@ export interface AdminPriceGapsRow {
 
 export interface AdminPriceGaps {
   rows: AdminPriceGapsRow[];
+}
+
+export interface AdminTopPharmaciesRow {
+  pharmacy: { id: number; name: string; sido: string | null; sigungu: string | null };
+  reportCount: number;
+}
+
+export interface AdminTopPharmacies {
+  period: string;
+  rows: AdminTopPharmaciesRow[];
+}
+
+export interface AdminTopReportersRow {
+  userId: number;
+  nickname: string;
+  reportCount: number;
+}
+
+export interface AdminTopReporters {
+  period: string;
+  rows: AdminTopReportersRow[];
+}
+
+export interface AdminTopDrugsByReportsRow {
+  drug: { id: number; displayName: string };
+  reportCount: number;
+}
+
+export interface AdminTopDrugsByReports {
+  period: string;
+  rows: AdminTopDrugsByReportsRow[];
+}
+
+export interface AdminTopDrugsBySearchesRow {
+  drug: { id: number; displayName: string };
+  searchCount: number;
+}
+
+export interface AdminTopDrugsBySearches {
+  period: string;
+  rows: AdminTopDrugsBySearchesRow[];
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
 }

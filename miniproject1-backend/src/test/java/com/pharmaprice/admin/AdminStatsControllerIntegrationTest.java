@@ -120,8 +120,43 @@ class AdminStatsControllerIntegrationTest extends AbstractIntegrationTest {
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
 				.param("drugId", String.valueOf(drug.getId())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.rows[?(@.region.sigungu=='노원구')].avgPrice").value(100))
-			.andExpect(jsonPath("$.rows[?(@.region.sigungu=='서초구')].avgPrice").value(100000));
+			.andExpect(jsonPath("$.content[?(@.region.sigungu=='노원구')].avgPrice").value(100))
+			.andExpect(jsonPath("$.content[?(@.region.sigungu=='서초구')].avgPrice").value(100000));
+	}
+
+	@Test
+	void regions는_기본_페이지_크기와_totalElements를_반환한다() throws Exception {
+		mockMvc.perform(get("/api/v1/admin/stats/regions")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+				.param("drugId", String.valueOf(drug.getId())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.page").value(0))
+			.andExpect(jsonPath("$.totalElements").value(3));
+	}
+
+	@Test
+	void topPharmacies는_기간_필터와_무관하게_200을_반환한다() throws Exception {
+		mockMvc.perform(get("/api/v1/admin/stats/top-pharmacies")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+				.param("period", "WEEK"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.period").value("WEEK"));
+	}
+
+	@Test
+	void topReporters는_잘못된_period면_400을_반환한다() throws Exception {
+		mockMvc.perform(get("/api/v1/admin/stats/top-reporters")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+				.param("period", "INVALID"))
+			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void topDrugsBySearches는_검색_로그가_없어도_200과_빈_rows를_반환한다() throws Exception {
+		mockMvc.perform(get("/api/v1/admin/stats/top-drugs-by-searches")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.rows").isArray());
 	}
 
 	@Test

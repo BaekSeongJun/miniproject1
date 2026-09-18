@@ -39,4 +39,26 @@ public class AdminStatsResponse {
 
 		public record RegionPrice(String sido, String sigungu, int avgPrice) {}
 	}
+
+	public record TopPharmacies(String period, List<Row> rows) {
+		public record Row(Pharmacy pharmacy, long reportCount) {}
+
+		public record Pharmacy(long id, String name, String sido, String sigungu) {}
+	}
+
+	public record TopReporters(String period, List<Row> rows) {
+		public record Row(long userId, String nickname, long reportCount) {}
+	}
+
+	public record TopDrugsByReports(String period, List<Row> rows) {
+		public record Row(Drug drug, long reportCount) {}
+
+		public record Drug(long id, String displayName) {}
+	}
+
+	public record TopDrugsBySearches(String period, List<Row> rows) {
+		public record Row(Drug drug, long searchCount) {}
+
+		public record Drug(long id, String displayName) {}
+	}
 }

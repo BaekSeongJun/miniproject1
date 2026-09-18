@@ -2,8 +2,11 @@ package com.pharmaprice.admin.repository;
 
 import com.pharmaprice.pharmacy.domain.Pharmacy;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -43,26 +46,55 @@ public interface AdminStatsRepository extends Repository<Pharmacy, Long> {
 	List<DailyTrendRow> findRecentTrend();
 
 	// §5.3 지역별 가격 통계 (F4-3)
-	@Query(value = """
-		SELECT r.code AS regionCode, r.sido AS sido, r.sigungu AS sigungu,
-		       d.id AS drugId, d.display_name AS drugDisplayName,
-		       ROUND(AVG(s.rep_price))::int AS avgPrice,
-		       MIN(s.rep_price) AS minPrice,
-		       MAX(s.rep_price) AS maxPrice,
-		       COUNT(DISTINCT s.pharmacy_id) AS pharmacyCount,
-		       SUM(s.report_count) AS reportCount
-		FROM pharmacy_drug_price_stat s
-		JOIN pharmacy p ON p.id = s.pharmacy_id
-		JOIN region   r ON r.code = p.region_code
-		JOIN drug     d ON d.id = s.drug_id
-		WHERE (:regionCode IS NULL OR p.region_code = :regionCode)
-		  AND (:drugId     IS NULL OR s.drug_id = :drugId)
-		  AND (:sido       IS NULL OR r.sido = :sido)
-		GROUP BY r.code, r.sido, r.sigungu, d.id, d.display_name
-		ORDER BY r.sido, r.sigungu, d.display_name
-		""", nativeQuery = true)
-	List<RegionStatRow> findRegionStats(
-		@Param("regionCode") String regionCode, @Param("drugId") Long drugId, @Param("sido") String sido);
+	// native query는 파라미터가 값으로만 바인딩되어 ORDER BY :sortCol이 동작하지 않으므로 CASE WHEN으로 분기한다.
+	// sortCol/sortDir 값 자체는 서비스 레이어 화이트리스트로 검증된 것만 들어온다.
+	@Query(
+		value = """
+			SELECT r.code AS regionCode, r.sido AS sido, r.sigungu AS sigungu,
+			       d.id AS drugId, d.display_name AS drugDisplayName,
+			       ROUND(AVG(s.rep_price))::int AS avgPrice,
+			       MIN(s.rep_price) AS minPrice,
+			       MAX(s.rep_price) AS maxPrice,
+			       COUNT(DISTINCT s.pharmacy_id) AS pharmacyCount,
+			       SUM(s.report_count) AS reportCount
+			FROM pharmacy_drug_price_stat s
+			JOIN pharmacy p ON p.id = s.pharmacy_id
+			JOIN region   r ON r.code = p.region_code
+			JOIN drug     d ON d.id = s.drug_id
+			WHERE (:regionCode IS NULL OR p.region_code = :regionCode)
+			  AND (:drugId     IS NULL OR s.drug_id = :drugId)
+			  AND (:sido       IS NULL OR r.sido = :sido)
+			GROUP BY r.code, r.sido, r.sigungu, d.id, d.display_name
+			ORDER BY
+			  CASE WHEN :sortCol = 'avgPrice'      AND :sortDir = 'ASC'  THEN AVG(s.rep_price) END ASC,
+			  CASE WHEN :sortCol = 'avgPrice'      AND :sortDir = 'DESC' THEN AVG(s.rep_price) END DESC,
+			  CASE WHEN :sortCol = 'minPrice'      AND :sortDir = 'ASC'  THEN MIN(s.rep_price) END ASC,
+			  CASE WHEN :sortCol = 'minPrice'      AND :sortDir = 'DESC' THEN MIN(s.rep_price) END DESC,
+			  CASE WHEN :sortCol = 'maxPrice'      AND :sortDir = 'ASC'  THEN MAX(s.rep_price) END ASC,
+			  CASE WHEN :sortCol = 'maxPrice'      AND :sortDir = 'DESC' THEN MAX(s.rep_price) END DESC,
+			  CASE WHEN :sortCol = 'pharmacyCount' AND :sortDir = 'ASC'  THEN COUNT(DISTINCT s.pharmacy_id) END ASC,
+			  CASE WHEN :sortCol = 'pharmacyCount' AND :sortDir = 'DESC' THEN COUNT(DISTINCT s.pharmacy_id) END DESC,
+			  CASE WHEN :sortCol = 'reportCount'   AND :sortDir = 'ASC'  THEN SUM(s.report_count) END ASC,
+			  CASE WHEN :sortCol = 'reportCount'   AND :sortDir = 'DESC' THEN SUM(s.report_count) END DESC,
+			  r.sido, r.sigungu, d.display_name
+			""",
+		countQuery = """
+			SELECT COUNT(*) FROM (
+			  SELECT 1
+			  FROM pharmacy_drug_price_stat s
+			  JOIN pharmacy p ON p.id = s.pharmacy_id
+			  JOIN region   r ON r.code = p.region_code
+			  JOIN drug     d ON d.id = s.drug_id
+			  WHERE (:regionCode IS NULL OR p.region_code = :regionCode)
+			    AND (:drugId     IS NULL OR s.drug_id = :drugId)
+			    AND (:sido       IS NULL OR r.sido = :sido)
+			  GROUP BY r.code, d.id
+			) counted
+			""",
+		nativeQuery = true)
+	Page<RegionStatRow> findRegionStats(
+		@Param("regionCode") String regionCode, @Param("drugId") Long drugId, @Param("sido") String sido,
+		@Param("sortCol") String sortCol, @Param("sortDir") String sortDir, Pageable pageable);
 
 	// 가격 히스토그램 (500원 버킷)
 	@Query(value = """
@@ -134,6 +166,48 @@ public interface AdminStatsRepository extends Repository<Pharmacy, Long> {
 		""", nativeQuery = true)
 	List<PriceGapRow> findPriceGaps(@Param("limit") int limit);
 
+	// 약국별 제보 건수 Top N (기간 필터)
+	@Query(value = """
+		SELECT p.id AS pharmacyId, p.name AS pharmacyName,
+		       r.sido AS sido, r.sigungu AS sigungu,
+		       COUNT(*) AS reportCount
+		FROM price_report pr
+		JOIN pharmacy p ON p.id = pr.pharmacy_id
+		LEFT JOIN region r ON r.code = p.region_code
+		WHERE pr.status = 'ACTIVE'
+		  AND (CAST(:since AS timestamptz) IS NULL OR pr.created_at >= CAST(:since AS timestamptz))
+		GROUP BY p.id, p.name, r.sido, r.sigungu
+		ORDER BY reportCount DESC
+		LIMIT :limit
+		""", nativeQuery = true)
+	List<PharmacyRankRow> findTopPharmaciesByReportCount(@Param("since") Instant since, @Param("limit") int limit);
+
+	// 제보자 순위 (user_id INNER JOIN이라 익명 제보 자동 제외, 기간 필터)
+	@Query(value = """
+		SELECT u.id AS userId, u.nickname AS nickname, COUNT(*) AS reportCount
+		FROM price_report pr
+		JOIN app_user u ON u.id = pr.user_id
+		WHERE pr.status = 'ACTIVE'
+		  AND (CAST(:since AS timestamptz) IS NULL OR pr.created_at >= CAST(:since AS timestamptz))
+		GROUP BY u.id, u.nickname
+		ORDER BY reportCount DESC
+		LIMIT :limit
+		""", nativeQuery = true)
+	List<ReporterRankRow> findTopReporters(@Param("since") Instant since, @Param("limit") int limit);
+
+	// 약품별 제보 건수 순위 (기간 필터)
+	@Query(value = """
+		SELECT d.id AS drugId, d.display_name AS drugDisplayName, COUNT(*) AS reportCount
+		FROM price_report pr
+		JOIN drug d ON d.id = pr.drug_id
+		WHERE pr.status = 'ACTIVE'
+		  AND (CAST(:since AS timestamptz) IS NULL OR pr.created_at >= CAST(:since AS timestamptz))
+		GROUP BY d.id, d.display_name
+		ORDER BY reportCount DESC
+		LIMIT :limit
+		""", nativeQuery = true)
+	List<DrugReportRankRow> findTopDrugsByReportCount(@Param("since") Instant since, @Param("limit") int limit);
+
 	interface DailyTrendRow {
 		LocalDate getReportDate();
 		Long getReportCount();
@@ -183,5 +257,25 @@ public interface AdminStatsRepository extends Repository<Pharmacy, Long> {
 		Integer getPriciestAvgPrice();
 		Integer getGap();
 		BigDecimal getGapPct();
+	}
+
+	interface PharmacyRankRow {
+		Long getPharmacyId();
+		String getPharmacyName();
+		String getSido();
+		String getSigungu();
+		Long getReportCount();
+	}
+
+	interface ReporterRankRow {
+		Long getUserId();
+		String getNickname();
+		Long getReportCount();
+	}
+
+	interface DrugReportRankRow {
+		Long getDrugId();
+		String getDrugDisplayName();
+		Long getReportCount();
 	}
 }
