@@ -39,7 +39,7 @@ export default async function SearchPage(props: PageProps<"/search">) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-6">
       <SearchLocationSync />
 
       {data.dataSource !== "USER" && (
@@ -51,9 +51,9 @@ export default async function SearchPage(props: PageProps<"/search">) {
       <SearchDrugSwitcher currentDrugName={data.drug.displayName} />
 
       <div>
-        <h1 className="text-lg font-semibold">{data.drug.displayName}</h1>
+        <h1 className="text-xl font-bold tracking-tight">{data.drug.displayName}</h1>
         {data.drug.packageUnit && (
-          <p className="text-sm text-muted-foreground">{data.drug.packageUnit}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{data.drug.packageUnit}</p>
         )}
       </div>
 
@@ -64,8 +64,15 @@ export default async function SearchPage(props: PageProps<"/search">) {
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            반경 {formatRadius(data.query.radius)} 내 {data.summary.resultCount}곳
-            {data.summary.maxSaving ? ` · 최대 ${formatPrice(data.summary.maxSaving)} 절약 가능` : ""}
+            반경 {formatRadius(data.query.radius)} 내 <span className="font-medium text-foreground">{data.summary.resultCount}곳</span>
+            {data.summary.maxSaving ? (
+              <>
+                {" "}
+                · 최대 <span className="font-semibold text-primary">{formatPrice(data.summary.maxSaving)}</span> 절약 가능
+              </>
+            ) : (
+              ""
+            )}
           </p>
           <SearchResults data={data} />
         </>
@@ -102,13 +109,13 @@ function EmptyResult({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
+    <div className="flex flex-col items-center gap-4 py-16 text-center">
       <p className="text-sm text-muted-foreground">
         반경을 {formatRadius(suggestion.recommendedRadius)}로 넓히면 {suggestion.estimatedCount}곳이 있습니다.
       </p>
       <Link
         href={`/search?${params.toString()}`}
-        className="rounded-full border-2 border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-accent"
+        className="rounded-full border border-primary px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent"
       >
         반경 확대해서 다시 검색
       </Link>

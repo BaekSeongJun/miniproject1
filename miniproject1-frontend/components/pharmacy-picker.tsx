@@ -111,7 +111,7 @@ export function PharmacyPicker({
           aria-controls={listboxId}
           aria-describedby={describedBy}
           autoComplete="off"
-          className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-10 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-10 text-sm outline-none transition-shadow focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30"
           placeholder="약국 이름을 입력하세요"
           value={query}
           onChange={(e) => {
@@ -125,7 +125,7 @@ export function PharmacyPicker({
         <button
           type="button"
           aria-label="지도에서 고르기"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           onClick={() => setMapOpen(true)}
         >
           <MapPin className="size-4" />
@@ -136,7 +136,7 @@ export function PharmacyPicker({
         <ul
           id={listboxId}
           role="listbox"
-          className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-popover shadow-md"
+          className="absolute z-10 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover shadow-[0_4px_12px_hsl(var(--shadow-color)/0.08),0_16px_40px_-16px_hsl(var(--shadow-color)/0.3)]"
         >
           {isFetching && <li className="px-4 py-3 text-sm text-muted-foreground">검색 중...</li>}
           {!isFetching && results.length === 0 && (

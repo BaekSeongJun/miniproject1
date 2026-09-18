@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import type { BusinessHours as BusinessHoursType } from "@/types/pharmacy";
 
 const DAY_LABEL: Record<keyof BusinessHoursType, string> = {
@@ -13,11 +14,13 @@ const DAY_LABEL: Record<keyof BusinessHoursType, string> = {
 
 export function BusinessHours({ hours }: { hours: BusinessHoursType }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+    <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
       {(Object.keys(DAY_LABEL) as (keyof BusinessHoursType)[]).map((day) => (
         <div key={day} className="flex items-center justify-between">
           <dt className="text-muted-foreground">{DAY_LABEL[day]}</dt>
-          <dd className="tabular-nums">{hours[day] ? hours[day]!.join(" – ") : "휴무"}</dd>
+          <dd className={cn("tabular-nums", !hours[day] && "text-muted-foreground")}>
+            {hours[day] ? hours[day]!.join(" – ") : "휴무"}
+          </dd>
         </div>
       ))}
     </dl>

@@ -66,7 +66,7 @@ export function RegionPicker({ open, onOpenChange }: RegionPickerProps) {
           <DialogTitle>지역 선택</DialogTitle>
         </DialogHeader>
 
-        <Button variant="outline" onClick={handleUseGps} className="gap-1.5">
+        <Button variant="outline" onClick={handleUseGps} className="w-full gap-1.5">
           <Navigation className="size-4" />
           현재 위치 사용
         </Button>

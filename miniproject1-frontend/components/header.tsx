@@ -12,9 +12,9 @@ export function Header() {
   const { user, status } = useAppSelector((state) => state.auth);
 
   return (
-    <header className="border-b-2 border-border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
+    <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm supports-backdrop-filter:bg-card/80">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+        <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
           <LogoMark className="size-7 sm:size-8" />
           <span className="text-base font-bold tracking-tight sm:text-lg">우리동네약값</span>
         </Link>
@@ -23,18 +23,18 @@ export function Header() {
           {status === "authenticated" && user ? (
             <div className="flex items-center gap-2.5 text-sm sm:gap-3">
               <span className="hidden text-muted-foreground md:inline">{user.nickname}님</span>
-              <Link href="/me" className="text-muted-foreground hover:text-foreground">
+              <Link href="/me" className="text-muted-foreground transition-colors hover:text-foreground">
                 내 제보
               </Link>
               {user.role === "ADMIN" && (
-                <Link href="/admin" className="text-muted-foreground hover:text-foreground">
+                <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">
                   관리자
                 </Link>
               )}
               <button
                 type="button"
                 onClick={() => dispatch(logout())}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground transition-colors hover:text-foreground"
               >
                 로그아웃
               </button>

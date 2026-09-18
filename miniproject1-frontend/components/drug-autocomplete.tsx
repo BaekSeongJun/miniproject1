@@ -136,9 +136,9 @@ export function DrugAutocomplete({
           aria-describedby={describedBy}
           autoComplete="off"
           className={cn(
-            "w-full rounded-2xl border-2 border-border bg-card pr-4 outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30",
+            "w-full rounded-2xl border border-border bg-card pr-4 outline-none transition-shadow duration-200 focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30",
             size === "lg"
-              ? "h-14 pl-11 text-base shadow-sm md:h-16 md:pl-13 md:text-lg"
+              ? "h-14 pl-11 text-base card-elevated md:h-16 md:pl-13 md:text-lg"
               : "h-9 pl-9 text-sm",
           )}
           placeholder={placeholder}
@@ -157,7 +157,7 @@ export function DrugAutocomplete({
         <ul
           id={listboxId}
           role="listbox"
-          className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-popover shadow-md"
+          className="absolute z-10 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover shadow-[0_4px_12px_hsl(var(--shadow-color)/0.08),0_16px_40px_-16px_hsl(var(--shadow-color)/0.3)]"
         >
           {isFetching && (
             <li className="px-4 py-3 text-sm text-muted-foreground">검색 중...</li>
@@ -215,7 +215,7 @@ export function DrugAutocomplete({
             <button
               key={name}
               type="button"
-              className="rounded-full border-2 border-border bg-card px-3.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+              className="rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-medium text-foreground transition-all duration-150 hover:border-primary hover:text-primary hover:-translate-y-0.5 active:translate-y-0"
               onClick={() => {
                 setQuery(name);
                 setOpen(true);

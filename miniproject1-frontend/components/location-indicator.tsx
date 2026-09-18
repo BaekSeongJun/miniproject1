@@ -44,7 +44,7 @@ export function LocationIndicator() {
       <button
         type="button"
         onClick={() => setPickerOpen(true)}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <Icon className="size-4 shrink-0" />
         <span className="hidden sm:inline">{label}</span>

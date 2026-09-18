@@ -18,7 +18,7 @@ interface PageResponse<T> {
 }
 
 function statusLabel(report: PriceReportListItem): { text: string; className: string } {
-  if (report.flagged) return { text: "검토 중", className: "bg-amber-100 text-amber-800" };
+  if (report.flagged) return { text: "검토 중", className: "bg-secondary text-secondary-foreground" };
   if (report.status === "HIDDEN") return { text: "숨김 처리됨", className: "bg-muted text-muted-foreground" };
   if (report.status === "REJECTED") return { text: "반려됨", className: "bg-destructive/10 text-destructive" };
   return { text: "반영됨", className: "bg-accent text-accent-foreground" };
@@ -38,10 +38,10 @@ export default function MyReportsPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-7 px-4 py-8">
       <div>
-        <h1 className="text-lg font-semibold">내 제보</h1>
-        {data && <p className="text-sm text-muted-foreground">총 {data.totalElements}건</p>}
+        <h1 className="text-2xl font-bold tracking-tight">내 제보</h1>
+        {data && <p className="mt-1 text-sm text-muted-foreground">총 {data.totalElements}건</p>}
       </div>
 
       {isLoading && <LoadingSkeleton rows={4} />}
@@ -58,11 +58,14 @@ export default function MyReportsPage() {
       )}
 
       {data && data.content.length > 0 && (
-        <ul className="rounded-lg border divide-y">
+        <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card card-elevated">
           {data.content.map((report) => {
             const badge = statusLabel(report);
             return (
-              <li key={report.id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <li
+                key={report.id}
+                className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-muted/40"
+              >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
                     {report.drug.displayName}
@@ -75,8 +78,8 @@ export default function MyReportsPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="text-sm font-semibold">{formatPrice(report.price)}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>{badge.text}</span>
+                  <span className="text-sm font-semibold tabular-nums">{formatPrice(report.price)}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}>{badge.text}</span>
                 </div>
               </li>
             );

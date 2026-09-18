@@ -15,19 +15,22 @@ export function SearchResults({ data }: { data: SearchResult }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <PharmacyMap
-        center={{ lat: data.query.lat, lng: data.query.lng }}
-        markers={data.results.map((r) => ({
-          id: r.pharmacy.id,
-          lat: r.pharmacy.lat,
-          lng: r.pharmacy.lng,
-          label: formatPrice(r.price.repPrice),
-          highlight: r.recommended,
-        }))}
-        selectedId={selectedId}
-        onSelect={selectAndScroll}
-      />
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_380px] lg:items-start lg:gap-5">
+      <div className="lg:sticky lg:top-20">
+        <PharmacyMap
+          center={{ lat: data.query.lat, lng: data.query.lng }}
+          markers={data.results.map((r) => ({
+            id: r.pharmacy.id,
+            lat: r.pharmacy.lat,
+            lng: r.pharmacy.lng,
+            label: formatPrice(r.price.repPrice),
+            highlight: r.recommended,
+          }))}
+          selectedId={selectedId}
+          onSelect={selectAndScroll}
+          className="h-64 lg:h-[calc(100vh-9rem)]"
+        />
+      </div>
       <ul className="flex flex-col gap-3">
         {data.results.map((result) => (
           <PharmacyResultCard

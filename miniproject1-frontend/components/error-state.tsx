@@ -10,7 +10,7 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
       <p className="text-sm text-muted-foreground">{message}</p>
       <Button variant="outline" onClick={onRetry ?? (() => window.location.reload())}>
         다시 시도

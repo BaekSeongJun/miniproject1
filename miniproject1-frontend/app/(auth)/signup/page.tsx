@@ -54,8 +54,11 @@ function SignupForm() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4 py-16">
-      <h1 className="text-xl font-semibold">회원가입</h1>
+    <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-7 px-4 py-16">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">회원가입</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">가입하고 우리 동네 약값 정보를 나눠보세요.</p>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
         <div className="flex flex-col gap-1.5">
@@ -68,7 +71,7 @@ function SignupForm() {
             autoComplete="email"
             aria-invalid={!!errors.email}
             aria-describedby={errors.email ? "email-error" : undefined}
-            className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none transition-shadow focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30"
             {...register("email")}
           />
           {errors.email && (
@@ -88,7 +91,7 @@ function SignupForm() {
             autoComplete="new-password"
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? "password-error" : undefined}
-            className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none transition-shadow focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30"
             {...register("password")}
           />
           {errors.password && (
@@ -107,7 +110,7 @@ function SignupForm() {
             autoComplete="nickname"
             aria-invalid={!!errors.nickname}
             aria-describedby={errors.nickname ? "nickname-error" : undefined}
-            className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none transition-shadow focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30"
             {...register("nickname")}
           />
           {errors.nickname && (
@@ -130,7 +133,7 @@ function SignupForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         이미 계정이 있으신가요?{" "}
-        <Link href={`/login?next=${encodeURIComponent(next)}`} className="text-primary underline-offset-4 hover:underline">
+        <Link href={`/login?next=${encodeURIComponent(next)}`} className="font-medium text-primary underline-offset-4 hover:underline">
           로그인
         </Link>
       </p>

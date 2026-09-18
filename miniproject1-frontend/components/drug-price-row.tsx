@@ -12,12 +12,12 @@ export function DrugPriceRow({ pharmacyId, drugPrice }: { pharmacyId: number; dr
   const { drugId, displayName, packageUnit, repPrice, reportCount, lastReportedAt, diffFromNationalAvg } = drugPrice;
 
   return (
-    <li className="border-b last:border-b-0">
+    <li className="border-b border-border last:border-b-0">
       <button
         type="button"
         onClick={() => setIsExpanded((prev) => !prev)}
         aria-expanded={isExpanded}
-        className="flex w-full items-center justify-between gap-3 px-1 py-3 text-left hover:bg-muted/50"
+        className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/50"
       >
         <div className="min-w-0">
           <p className="truncate font-medium">{displayName}</p>
@@ -30,7 +30,7 @@ export function DrugPriceRow({ pharmacyId, drugPrice }: { pharmacyId: number; dr
           </p>
           <p
             className={cn(
-              "text-xs",
+              "text-xs tabular-nums",
               diffFromNationalAvg < 0 ? "font-medium text-primary" : "text-muted-foreground",
             )}
           >
@@ -39,7 +39,7 @@ export function DrugPriceRow({ pharmacyId, drugPrice }: { pharmacyId: number; dr
           </p>
         </div>
       </button>
-      {isExpanded && <PriceHistoryChart pharmacyId={pharmacyId} drugId={drugId} />}
+      {isExpanded && <div className="px-4 pb-4"><PriceHistoryChart pharmacyId={pharmacyId} drugId={drugId} /></div>}
     </li>
   );
 }

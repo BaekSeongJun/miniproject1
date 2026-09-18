@@ -218,8 +218,11 @@ function NewReportForm() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-8">
-      <h1 className="text-xl font-semibold">가격 제보하기</h1>
+    <div className="mx-auto flex w-full max-w-md flex-col gap-8 px-4 py-10">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">가격 제보하기</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">약국과 약품, 가격만 입력하면 돼요. 30초면 충분해요.</p>
+      </div>
 
       <form
         onSubmit={handleSubmit((values) => mutation.mutate(values))}
@@ -272,7 +275,7 @@ function NewReportForm() {
           )}
 
           {newDrugMode && (
-            <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
+            <div className="flex flex-col gap-3 rounded-xl border border-dashed border-border bg-muted/30 p-3.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">새 약품 등록 (관리자 승인 후 반영됩니다)</span>
                 <button
@@ -366,7 +369,7 @@ function NewReportForm() {
         </button>
 
         {detailsOpen && (
-          <div className="flex flex-col gap-4 rounded-lg border border-border p-4">
+          <div className="flex flex-col gap-4 rounded-xl border border-border bg-muted/20 p-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="purchasedAt" className="text-sm font-medium">
                 구매일
@@ -433,8 +436,8 @@ function NewReportForm() {
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   className={cn(
-                    "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-3 py-6 text-sm text-muted-foreground transition-colors",
-                    dragOver ? "border-primary bg-accent" : "border-border hover:bg-muted",
+                    "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-3 py-8 text-sm text-muted-foreground transition-all duration-150",
+                    dragOver ? "border-primary bg-accent scale-[1.01]" : "border-border hover:bg-muted",
                   )}
                 >
                   <Paperclip className="size-5" />
@@ -443,7 +446,7 @@ function NewReportForm() {
               )}
 
               {receiptPreview && (
-                <div className="flex flex-col gap-2 rounded-lg border border-border p-2">
+                <div className="flex flex-col gap-2 rounded-xl border border-border p-2">
                   <div className="relative">
                     <img
                       src={receiptPreview}

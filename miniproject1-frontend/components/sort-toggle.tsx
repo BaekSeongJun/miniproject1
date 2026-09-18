@@ -25,15 +25,16 @@ export function SortToggle() {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex gap-1 rounded-full border-2 border-border bg-card p-1">
+      <div className="flex gap-1 rounded-full border border-border bg-card p-1">
         {SORT_OPTIONS.map((opt) => (
           <button
             key={opt.value}
             type="button"
+            aria-pressed={sort === opt.value}
             className={cn(
-              "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+              "rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-150",
               sort === opt.value
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
             onClick={() => updateParam("sort", opt.value)}
@@ -48,8 +49,9 @@ export function SortToggle() {
           <button
             key={r}
             type="button"
+            aria-pressed={Number(radius) === r}
             className={cn(
-              "rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors",
+              "rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150",
               Number(radius) === r
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-card text-muted-foreground hover:border-primary hover:text-primary",
