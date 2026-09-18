@@ -1,5 +1,5 @@
 import { formatPrice } from "@/lib/format";
 
 export function PriceTag({ price }: { price: number }) {
-  return <span className="font-semibold tabular-nums">{formatPrice(price)}</span>;
+  return <span className="text-xl font-bold tabular-nums text-foreground">{formatPrice(price)}</span>;
 }

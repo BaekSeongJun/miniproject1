@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LocationIndicator } from "@/components/location-indicator";
+import { LogoMark } from "@/components/logo-mark";
 import { NoticeBanner } from "@/components/notice-banner";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { logout } from "@/lib/slices/auth-slice";
@@ -11,16 +12,17 @@ export function Header() {
   const { user, status } = useAppSelector((state) => state.auth);
 
   return (
-    <header>
-      <div className="flex items-center justify-between px-4 py-3">
-        <Link href="/" className="text-lg font-semibold">
-          약가비교
+    <header className="border-b-2 border-border bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
+          <LogoMark className="size-7 sm:size-8" />
+          <span className="text-base font-bold tracking-tight sm:text-lg">우리동네약값</span>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <LocationIndicator />
           {status === "authenticated" && user ? (
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-muted-foreground">{user.nickname}님</span>
+            <div className="flex items-center gap-2.5 text-sm sm:gap-3">
+              <span className="hidden text-muted-foreground md:inline">{user.nickname}님</span>
               <Link href="/me" className="text-muted-foreground hover:text-foreground">
                 내 제보
               </Link>
@@ -38,7 +40,7 @@ export function Header() {
               </button>
             </div>
           ) : (
-            <Link href="/login" className="text-sm text-muted-foreground">
+            <Link href="/login" className="text-sm font-medium text-primary hover:underline">
               로그인
             </Link>
           )}

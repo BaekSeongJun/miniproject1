@@ -52,7 +52,10 @@ export function PharmacyMap({
   selectedId: number | null;
   onSelect: (id: number) => void;
 }) {
-  const [ready, setReady] = useState(false);
+  // next/script는 같은 src를 페이지에 한 번만 주입하므로, 다른 화면에서 이미 로드해둔 뒤
+  // 이 컴포넌트가 다시 마운트되면 onLoad가 재호출되지 않는다. 마운트 시점에 이미 로드돼
+  // 있는지 직접 확인해 그 경우를 놓치지 않는다.
+  const [ready, setReady] = useState(() => typeof window !== "undefined" && !!window.kakao?.maps);
   const [failed, setFailed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<KakaoMap | null>(null);
@@ -81,7 +84,7 @@ export function PharmacyMap({
         image: new window.kakao.maps.MarkerImage(
           "data:image/svg+xml;base64," +
             btoa(
-              '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="7" fill="#2563eb" stroke="white" stroke-width="2"/></svg>',
+              '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="7" fill="#006b37" stroke="white" stroke-width="2"/></svg>',
             ),
           new window.kakao.maps.Size(16, 16),
         ),

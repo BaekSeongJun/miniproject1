@@ -21,7 +21,7 @@ function statusLabel(report: PriceReportListItem): { text: string; className: st
   if (report.flagged) return { text: "검토 중", className: "bg-amber-100 text-amber-800" };
   if (report.status === "HIDDEN") return { text: "숨김 처리됨", className: "bg-muted text-muted-foreground" };
   if (report.status === "REJECTED") return { text: "반려됨", className: "bg-destructive/10 text-destructive" };
-  return { text: "반영됨", className: "bg-emerald-100 text-emerald-800" };
+  return { text: "반영됨", className: "bg-accent text-accent-foreground" };
 }
 
 export default function MyReportsPage() {

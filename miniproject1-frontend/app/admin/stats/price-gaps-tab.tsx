@@ -27,22 +27,24 @@ export function PriceGapsTab() {
   return (
     <ul className="flex flex-col gap-3">
       {data.rows.map((row) => (
-        <li key={row.drug.id} className="rounded-lg border p-3">
+        <li key={row.drug.id} className="rounded-lg border border-border bg-card p-3">
           <div className="flex items-baseline justify-between gap-2">
             <p className="text-sm font-medium">{row.drug.displayName}</p>
-            <p className="text-sm font-semibold tabular-nums">
+            <p className="font-mono text-sm font-semibold tabular-nums">
               {row.gapPct.toFixed(1)}% ({formatPrice(row.gap)})
             </p>
           </div>
           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-foreground"
+              className="h-full rounded-full bg-primary"
               style={{ width: `${(row.gapPct / maxGapPct) * 100}%` }}
             />
           </div>
           <p className="mt-1.5 text-xs text-muted-foreground">
-            최저가 {row.cheapestRegion.sido} {row.cheapestRegion.sigungu} ({formatPrice(row.cheapestRegion.avgPrice)}) ·
-            최고가 {row.priciestRegion.sido} {row.priciestRegion.sigungu} ({formatPrice(row.priciestRegion.avgPrice)})
+            최저가 {row.cheapestRegion.sido} {row.cheapestRegion.sigungu}{" "}
+            (<span className="font-mono">{formatPrice(row.cheapestRegion.avgPrice)}</span>) · 최고가{" "}
+            {row.priciestRegion.sido} {row.priciestRegion.sigungu}{" "}
+            (<span className="font-mono">{formatPrice(row.priciestRegion.avgPrice)}</span>)
           </p>
         </li>
       ))}

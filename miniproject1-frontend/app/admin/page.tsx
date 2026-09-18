@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { apiFetch } from "@/lib/api";
@@ -12,9 +11,9 @@ import type { AdminOverview } from "@/types/admin";
 
 function KpiCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+    <div className="w-40 shrink-0 rounded-lg border p-4 sm:w-auto">
+      <p className="whitespace-nowrap text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 whitespace-nowrap font-mono text-2xl font-semibold tabular-nums">{value}</p>
     </div>
   );
 }
@@ -31,21 +30,8 @@ export default function AdminDashboardPage() {
   if (!ready) return <LoadingSkeleton rows={5} />;
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">관리자 대시보드</h1>
-        <div className="flex gap-4 text-sm text-muted-foreground">
-          <Link href="/admin/reports" className="hover:text-foreground">
-            제보 관리 →
-          </Link>
-          <Link href="/admin/drugs" className="hover:text-foreground">
-            약품 승인 →
-          </Link>
-          <Link href="/admin/stats" className="hover:text-foreground">
-            통계 →
-          </Link>
-        </div>
-      </div>
+    <div className="flex flex-col gap-6 p-6">
+      <h1 className="text-lg font-semibold">개요</h1>
 
       {isLoading && <LoadingSkeleton rows={5} />}
 
@@ -55,7 +41,7 @@ export default function AdminDashboardPage() {
 
       {data && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <div className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0">
             <KpiCard label="약국 수" value={data.totals.pharmacyCount.toLocaleString()} />
             <KpiCard label="약품 수" value={data.totals.drugCount.toLocaleString()} />
             <KpiCard label="제보 수" value={data.totals.reportCount.toLocaleString()} />
@@ -68,14 +54,22 @@ export default function AdminDashboardPage() {
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.recentTrend} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} tickMargin={8} />
-                  <YAxis tick={{ fontSize: 11 }} width={32} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
+                    tickMargin={8}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
+                    width={32}
+                    allowDecimals={false}
+                  />
                   <Tooltip />
                   <Line
                     type="monotone"
                     dataKey="reportCount"
-                    stroke="var(--color-foreground)"
+                    stroke="var(--color-primary)"
                     strokeWidth={2}
                     dot
                     isAnimationActive={false}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +31,14 @@ function todayString(): string {
 }
 
 export default function NewReportPage() {
+  return (
+    <Suspense>
+      <NewReportForm />
+    </Suspense>
+  );
+}
+
+function NewReportForm() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
@@ -426,7 +434,7 @@ export default function NewReportPage() {
                   onDrop={handleDrop}
                   className={cn(
                     "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-3 py-6 text-sm text-muted-foreground transition-colors",
-                    dragOver ? "border-foreground bg-muted" : "border-border hover:bg-muted",
+                    dragOver ? "border-primary bg-accent" : "border-border hover:bg-muted",
                   )}
                 >
                   <Paperclip className="size-5" />
@@ -455,7 +463,7 @@ export default function NewReportPage() {
                   {uploadMutation.isPending && (
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-foreground transition-all"
+                        className="h-full rounded-full bg-primary transition-all"
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>

@@ -50,11 +50,19 @@ export function DrugStatsTab() {
                   data={data.distribution.map((b) => ({ ...b, label: `${formatPrice(b.bucketFrom)}~` }))}
                   margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize: 10 }} tickMargin={8} />
-                  <YAxis tick={{ fontSize: 11 }} width={32} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+                    tickMargin={8}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
+                    width={32}
+                    allowDecimals={false}
+                  />
                   <Tooltip />
-                  <Bar dataKey="count" fill="var(--color-foreground)" isAnimationActive={false} />
+                  <Bar dataKey="count" fill="var(--color-primary)" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -65,11 +73,19 @@ export function DrugStatsTab() {
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.byRegion} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="sigungu" tick={{ fontSize: 10 }} tickMargin={8} />
-                  <YAxis tick={{ fontSize: 11 }} width={48} tickFormatter={(v: number) => formatPrice(v)} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                  <XAxis
+                    dataKey="sigungu"
+                    tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+                    tickMargin={8}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
+                    width={48}
+                    tickFormatter={(v: number) => formatPrice(v)}
+                  />
                   <Tooltip content={<AvgPriceTooltip />} />
-                  <Bar dataKey="avgPrice" fill="var(--color-foreground)" isAnimationActive={false} />
+                  <Bar dataKey="avgPrice" fill="var(--color-primary)" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -92,7 +108,7 @@ function AvgPriceTooltip({
   return (
     <div className="rounded-lg border bg-background px-3 py-2 text-xs shadow-sm">
       <p className="font-medium">{point.sigungu}</p>
-      <p className="tabular-nums">{formatPrice(point.avgPrice)}</p>
+      <p className="font-mono tabular-nums">{formatPrice(point.avgPrice)}</p>
     </div>
   );
 }
@@ -101,7 +117,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-base font-semibold tabular-nums">{value}</p>
+      <p className="mt-1 font-mono text-base font-semibold tabular-nums">{value}</p>
     </div>
   );
 }

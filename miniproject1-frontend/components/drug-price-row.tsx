@@ -31,7 +31,7 @@ export function DrugPriceRow({ pharmacyId, drugPrice }: { pharmacyId: number; dr
           <p
             className={cn(
               "text-xs",
-              diffFromNationalAvg < 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground",
+              diffFromNationalAvg < 0 ? "font-medium text-primary" : "text-muted-foreground",
             )}
           >
             전국 평균 대비 {diffFromNationalAvg > 0 ? "+" : ""}

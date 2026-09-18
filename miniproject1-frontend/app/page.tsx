@@ -4,27 +4,27 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <div className="mx-auto grid w-full max-w-4xl flex-1 grid-cols-1 gap-6 px-4 py-16 md:grid-cols-2 md:py-24">
-      <div className="flex flex-col items-center justify-center gap-6 text-center md:gap-8">
+    <div className="flex-1 bg-secondary/40">
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 px-4 py-16 text-center md:py-24">
         <div>
-          <h1 className="text-2xl font-semibold md:text-4xl">우리 동네 약 가격, 한눈에</h1>
-          <p className="mt-1 text-sm text-muted-foreground md:mt-2 md:text-base">
+          <h1 className="text-3xl font-bold tracking-tight text-balance md:text-5xl">
+            우리 동네 약 가격, 한눈에
+          </h1>
+          <p className="mt-3 text-base text-muted-foreground md:text-lg">
             찾는 약을 검색하면 근처 약국 가격을 비교해드려요.
           </p>
         </div>
         <DrugAutocomplete />
-      </div>
 
-      <div className="flex flex-col items-center justify-center gap-6 rounded-xl border border-dashed border-border px-4 py-10 text-center md:gap-8">
-        <div>
-          <h2 className="text-xl font-semibold md:text-2xl">가격 제보하기</h2>
-          <p className="mt-1 text-sm text-muted-foreground md:mt-2 md:text-base">
-            내가 산 약 가격을 공유하면 다른 사람에게 도움이 돼요.
-          </p>
+        <div className="mt-4 flex w-full max-w-md items-center justify-between gap-4 rounded-2xl border-2 border-border bg-card px-6 py-4 text-left shadow-sm">
+          <div>
+            <p className="text-sm font-semibold">내가 산 약, 가격 공유하기</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">30초면 충분해요. 다른 이웃에게 도움이 돼요.</p>
+          </div>
+          <Button nativeButton={false} render={<Link href="/reports/new" />} className="shrink-0">
+            제보하기
+          </Button>
         </div>
-        <Button nativeButton={false} render={<Link href="/reports/new" />}>
-          제보하러 가기
-        </Button>
       </div>
     </div>
   );

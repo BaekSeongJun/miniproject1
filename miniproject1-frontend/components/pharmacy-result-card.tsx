@@ -43,15 +43,15 @@ export function PharmacyResultCard({
       onMouseEnter={() => onHover?.(pharmacy.id)}
       onMouseLeave={() => onHover?.(null)}
       className={cn(
-        "flex flex-col gap-3 rounded-lg border p-4",
-        recommended ? "border-2 border-foreground" : "border-border",
-        selected && "ring-2 ring-offset-2 ring-foreground",
+        "flex flex-col gap-3 rounded-2xl border-2 bg-card p-4 shadow-sm",
+        recommended ? "border-primary" : "border-border",
+        selected && "ring-2 ring-offset-2 ring-primary",
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <div>
           {recommended && (
-            <span className="mb-1 inline-block rounded-full bg-foreground px-2 py-0.5 text-xs font-semibold text-background">
+            <span className="mb-1 inline-block rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
               {TOP_RANK_LABEL[sort] ?? TOP_RANK_LABEL.SCORE}
             </span>
           )}
@@ -73,7 +73,7 @@ export function PharmacyResultCard({
       </div>
 
       {price.savingVsCandidateAvg > 0 && (
-        <p className="text-sm text-emerald-600 dark:text-emerald-400">
+        <p className="text-sm font-medium text-primary">
           평균보다 {formatPrice(price.savingVsCandidateAvg)} 저렴
         </p>
       )}

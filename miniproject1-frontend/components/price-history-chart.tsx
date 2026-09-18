@@ -35,7 +35,7 @@ export function PriceHistoryChart({ pharmacyId, drugId }: { pharmacyId: number; 
           <Line
             type="monotone"
             dataKey="price"
-            stroke="var(--color-foreground)"
+            stroke="var(--color-primary)"
             strokeWidth={2}
             connectNulls
             dot={(props) => <HistoryDot key={props.index} {...props} />}
@@ -56,7 +56,7 @@ function HistoryDot({ cx, cy, payload, index }: { cx?: number; cy?: number; payl
       cx={cx}
       cy={cy}
       r={4}
-      fill={flagged ? "var(--color-muted-foreground)" : "var(--color-foreground)"}
+      fill={flagged ? "var(--color-muted-foreground)" : "var(--color-primary)"}
       stroke={flagged ? "var(--color-muted-foreground)" : "none"}
       strokeDasharray={flagged ? "2 2" : undefined}
     />
