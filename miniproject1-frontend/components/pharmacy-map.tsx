@@ -46,11 +46,15 @@ export function PharmacyMap({
   markers,
   selectedId,
   onSelect,
+  className,
+  level = 5,
 }: {
   center: { lat: number; lng: number };
   markers: MapMarker[];
   selectedId: number | null;
   onSelect: (id: number) => void;
+  className?: string;
+  level?: number;
 }) {
   // next/script는 같은 src를 페이지에 한 번만 주입하므로, 다른 화면에서 이미 로드해둔 뒤
   // 이 컴포넌트가 다시 마운트되면 onLoad가 재호출되지 않는다. 마운트 시점에 이미 로드돼
@@ -74,7 +78,7 @@ export function PharmacyMap({
     window.kakao.maps.load(() => {
       const map = new window.kakao.maps.Map(container, {
         center: new window.kakao.maps.LatLng(center.lat, center.lng),
-        level: 5,
+        level,
       });
       mapRef.current = map;
 
@@ -121,7 +125,7 @@ export function PharmacyMap({
         map.setBounds(bounds);
       }
     });
-  }, [ready, center.lat, center.lng, markers]);
+  }, [ready, center.lat, center.lng, markers, level]);
 
   useEffect(() => {
     for (const el of overlayElsRef.current.values()) {
@@ -150,7 +154,7 @@ export function PharmacyMap({
         onLoad={() => setReady(true)}
         onError={() => setFailed(true)}
       />
-      <div ref={containerRef} className="h-64 w-full rounded-lg border" />
+      <div ref={containerRef} className={`w-full rounded-2xl border border-border card-elevated ${className ?? "h-64"}`} />
     </>
   );
 }
