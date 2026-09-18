@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Navigation } from "lucide-react";
 import { useAppDispatch } from "@/lib/hooks";
-import { regionSelected } from "@/lib/slices/location-slice";
+import { regionSelected, reset } from "@/lib/slices/location-slice";
 import { useRegions } from "@/hooks/use-regions";
+import { LOCATION_STORAGE_KEY } from "@/hooks/use-user-location";
 import {
   Dialog,
   DialogContent,
@@ -47,12 +49,27 @@ export function RegionPicker({ open, onOpenChange }: RegionPickerProps) {
     onOpenChange(false);
   }
 
+  function handleUseGps() {
+    try {
+      sessionStorage.removeItem(LOCATION_STORAGE_KEY);
+    } catch {
+      // 시크릿 모드 등으로 접근이 막혀도 조용히 진행한다
+    }
+    dispatch(reset());
+    onOpenChange(false);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>지역 선택</DialogTitle>
         </DialogHeader>
+
+        <Button variant="outline" onClick={handleUseGps} className="gap-1.5">
+          <Navigation className="size-4" />
+          현재 위치 사용
+        </Button>
 
         {isLoading && <Skeleton className="h-20 w-full" />}
 

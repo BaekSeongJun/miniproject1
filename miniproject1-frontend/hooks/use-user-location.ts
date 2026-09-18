@@ -11,7 +11,8 @@ import {
   type LocationState,
 } from "@/lib/slices/location-slice";
 
-const STORAGE_KEY = "location";
+export const LOCATION_STORAGE_KEY = "location";
+const STORAGE_KEY = LOCATION_STORAGE_KEY;
 
 function isRestorable(value: unknown): value is LocationState & { status: "granted" | "fallback" } {
   return (

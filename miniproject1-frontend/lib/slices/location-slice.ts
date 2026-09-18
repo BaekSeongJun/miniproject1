@@ -38,9 +38,17 @@ const locationSlice = createSlice({
     denied: (): LocationState => ({ status: "denied" }),
     unavailable: (): LocationState => ({ status: "unavailable" }),
     restoredFromStorage: (_state, action: PayloadAction<LocationState>): LocationState => action.payload,
+    reset: (): LocationState => ({ status: "idle" }),
   },
 });
 
-export const { requestStart, gpsGranted, regionSelected, denied, unavailable, restoredFromStorage } =
-  locationSlice.actions;
+export const {
+  requestStart,
+  gpsGranted,
+  regionSelected,
+  denied,
+  unavailable,
+  restoredFromStorage,
+  reset,
+} = locationSlice.actions;
 export default locationSlice.reducer;

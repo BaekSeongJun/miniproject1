@@ -3,6 +3,8 @@ import { apiFetch } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
 import { SearchResults } from "@/components/search-results";
 import { SortToggle } from "@/components/sort-toggle";
+import { SearchDrugSwitcher } from "@/components/search-drug-switcher";
+import { SearchLocationSync } from "@/components/search-location-sync";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { toUserMessage } from "@/lib/error-message";
@@ -38,11 +40,15 @@ export default async function SearchPage(props: PageProps<"/search">) {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6">
+      <SearchLocationSync />
+
       {data.dataSource !== "USER" && (
         <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
           이 검색 결과는 학습용 예시 데이터를 포함합니다.
         </p>
       )}
+
+      <SearchDrugSwitcher currentDrugName={data.drug.displayName} />
 
       <div>
         <h1 className="text-lg font-semibold">{data.drug.displayName}</h1>
@@ -102,7 +108,7 @@ function EmptyResult({
       </p>
       <Link
         href={`/search?${params.toString()}`}
-        className="rounded-lg border border-foreground px-4 py-2 text-sm font-medium hover:bg-muted"
+        className="rounded-full border-2 border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-accent"
       >
         반경 확대해서 다시 검색
       </Link>

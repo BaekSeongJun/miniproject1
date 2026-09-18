@@ -26,18 +26,26 @@ export function DrugAutocomplete({
   onSelect,
   allowCreate,
   onCreateNew,
+  size = "lg",
+  placeholder = "약품 이름을 입력하세요 (예: 타이레놀)",
+  showPopular = true,
+  initialQuery = "",
 }: {
   id?: string;
   describedBy?: string;
   onSelect?: (drug: DrugSummary) => void;
   allowCreate?: boolean;
   onCreateNew?: (displayName: string) => void;
+  size?: "lg" | "sm";
+  placeholder?: string;
+  showPopular?: boolean;
+  initialQuery?: string;
 }) {
   const router = useRouter();
   const location = useAppSelector((s) => s.location);
   const listboxId = useId();
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -108,9 +116,17 @@ export function DrugAutocomplete({
   }
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-xl md:max-w-2xl">
+    <div
+      ref={containerRef}
+      className={cn("relative w-full", size === "lg" ? "max-w-xl md:max-w-2xl" : "max-w-sm")}
+    >
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground md:left-4 md:size-5" />
+        <Search
+          className={cn(
+            "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
+            size === "lg" ? "size-4 md:left-4 md:size-5" : "size-4",
+          )}
+        />
         <input
           id={id}
           role="combobox"
@@ -119,8 +135,13 @@ export function DrugAutocomplete({
           aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined}
           aria-describedby={describedBy}
           autoComplete="off"
-          className="h-12 w-full rounded-lg border border-border bg-background pl-10 pr-4 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:h-14 md:pl-12 md:text-lg"
-          placeholder="약품 이름을 입력하세요 (예: 타이레놀)"
+          className={cn(
+            "w-full rounded-2xl border-2 border-border bg-card pr-4 outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30",
+            size === "lg"
+              ? "h-14 pl-11 text-base shadow-sm md:h-16 md:pl-13 md:text-lg"
+              : "h-9 pl-9 text-sm",
+          )}
+          placeholder={placeholder}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -183,26 +204,28 @@ export function DrugAutocomplete({
         </ul>
       )}
 
-      <div
-        className={cn(
-          "mt-4 flex flex-wrap gap-2",
-          open && debouncedQuery.length >= 2 && "invisible",
-        )}
-      >
-        {POPULAR_DRUGS.map((name) => (
-          <button
-            key={name}
-            type="button"
-            className="rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground hover:border-foreground hover:text-foreground"
-            onClick={() => {
-              setQuery(name);
-              setOpen(true);
-            }}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+      {showPopular && (
+        <div
+          className={cn(
+            "mt-4 flex flex-wrap gap-2",
+            open && debouncedQuery.length >= 2 && "invisible",
+          )}
+        >
+          {POPULAR_DRUGS.map((name) => (
+            <button
+              key={name}
+              type="button"
+              className="rounded-full border-2 border-border bg-card px-3.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+              onClick={() => {
+                setQuery(name);
+                setOpen(true);
+              }}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

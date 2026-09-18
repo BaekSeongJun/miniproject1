@@ -150,6 +150,30 @@ class AdminReportControllerIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
+	void keyword로_약국명_약품명_제보자를_검색한다() throws Exception {
+		PriceReport target = report(2800, ReportStatus.ACTIVE, false);
+
+		// 시드 데이터가 전국 규모라 keyword가 다른 약국명에도 부분일치할 수 있으므로,
+		// 건수를 단정하지 않고 pharmacyId로 좁혀 정확히 그 제보가 나오는지만 확인한다.
+		mockMvc.perform(get("/api/v1/admin/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+				.param("keyword", "가온")
+				.param("pharmacyId", String.valueOf(pharmacy.getId())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].id").value(target.getId()))
+			.andExpect(jsonPath("$.content[0].pharmacy.name").value("가온약국"));
+
+		mockMvc.perform(get("/api/v1/admin/price-reports")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+				.param("keyword", "가온")
+				.param("pharmacyId", String.valueOf(pharmacy.getId()))
+				.param("drugId", "999999999"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(0));
+	}
+
+	@Test
 	void USER_토큰으로_admin_제보관리_호출시_403() throws Exception {
 		AppUser normalUser = appUserRepository.save(AppUser.builder()
 			.email("user-t32@example.com").passwordHash(passwordEncoder.encode("pw"))

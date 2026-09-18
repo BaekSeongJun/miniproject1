@@ -69,6 +69,25 @@ export async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
+// 인증이 필요한 바이너리(영수증 이미지 등) 다운로드용. <a href>로 직접 열면 Authorization
+// 헤더가 안 붙어 401이 나므로, fetch로 받아 blob URL을 만들어 호출자가 새 탭에 연다.
+export async function apiFetchBlob(path: string): Promise<Blob> {
+  async function send(token: string | null) {
+    return fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  }
+
+  let res = await send(getAccessToken());
+  if (res.status === 401) {
+    const newToken = await refreshAccessToken();
+    if (newToken) res = await send(newToken);
+  }
+
+  if (!res.ok) throw new ApiError(res.status, "UNKNOWN_ERROR", res.statusText);
+  return res.blob();
+}
+
 // fetch는 요청 바디 업로드 진행률을 알려주지 않으므로, 진행률 콜백이 필요한 업로드는 XHR로 보낸다.
 export function uploadFile<T>(
   path: string,

@@ -29,9 +29,10 @@ public class AdminReportController {
 			@RequestParam(required = false) String status,
 			@RequestParam(required = false) Long pharmacyId,
 			@RequestParam(required = false) Long drugId,
+			@RequestParam(required = false) String keyword,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return adminReportService.list(flagged, status, pharmacyId, drugId, page, size);
+		return adminReportService.list(flagged, status, pharmacyId, drugId, keyword, page, size);
 	}
 
 	@PatchMapping("/{reportId}")

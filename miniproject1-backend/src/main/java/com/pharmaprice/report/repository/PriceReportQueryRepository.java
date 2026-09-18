@@ -63,6 +63,7 @@ public interface PriceReportQueryRepository extends Repository<PriceReport, Long
 	}
 
 	// 관리자 목록: 일반 목록과 달리 상태/삭제 필터 없이 전체 노출하고, reporter.id/email·flagReason·receiptFileId를 추가로 포함한다.
+	// keyword는 약국명/약품명/제보자 닉네임·이메일에 대한 ILIKE 부분일치 검색 (고객 문의 대응용).
 	@Query(
 		value = """
 			SELECT r.id AS id,
@@ -81,20 +82,34 @@ public interface PriceReportQueryRepository extends Repository<PriceReport, Long
 			  AND (:status IS NULL OR r.status = :status)
 			  AND (:pharmacyId IS NULL OR r.pharmacy_id = :pharmacyId)
 			  AND (:drugId IS NULL OR r.drug_id = :drugId)
+			  AND (CAST(:keyword AS text) IS NULL
+			       OR p.name ILIKE CONCAT('%', CAST(:keyword AS text), '%')
+			       OR d.display_name ILIKE CONCAT('%', CAST(:keyword AS text), '%')
+			       OR u.nickname ILIKE CONCAT('%', CAST(:keyword AS text), '%')
+			       OR u.email ILIKE CONCAT('%', CAST(:keyword AS text), '%'))
 			ORDER BY r.created_at DESC
 			""",
 		countQuery = """
 			SELECT COUNT(*)
 			FROM price_report r
+			JOIN pharmacy p ON p.id = r.pharmacy_id
+			JOIN drug d ON d.id = r.drug_id
+			LEFT JOIN app_user u ON u.id = r.user_id
 			WHERE (:flagged IS NULL OR r.flagged = :flagged)
 			  AND (:status IS NULL OR r.status = :status)
 			  AND (:pharmacyId IS NULL OR r.pharmacy_id = :pharmacyId)
 			  AND (:drugId IS NULL OR r.drug_id = :drugId)
+			  AND (CAST(:keyword AS text) IS NULL
+			       OR p.name ILIKE CONCAT('%', CAST(:keyword AS text), '%')
+			       OR d.display_name ILIKE CONCAT('%', CAST(:keyword AS text), '%')
+			       OR u.nickname ILIKE CONCAT('%', CAST(:keyword AS text), '%')
+			       OR u.email ILIKE CONCAT('%', CAST(:keyword AS text), '%'))
 			""",
 		nativeQuery = true)
 	Page<AdminPriceReportListProjection> searchForAdmin(
 		@Param("flagged") Boolean flagged, @Param("status") String status,
-		@Param("pharmacyId") Long pharmacyId, @Param("drugId") Long drugId, Pageable pageable);
+		@Param("pharmacyId") Long pharmacyId, @Param("drugId") Long drugId,
+		@Param("keyword") String keyword, Pageable pageable);
 
 	interface AdminPriceReportListProjection {
 		Long getId();

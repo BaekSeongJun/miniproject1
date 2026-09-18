@@ -32,9 +32,11 @@ public class AdminReportService {
 
 	@Transactional(readOnly = true)
 	public PageResponse<AdminPriceReportListItemResponse> list(
-			Boolean flagged, String status, Long pharmacyId, Long drugId, int page, int size) {
+			Boolean flagged, String status, Long pharmacyId, Long drugId, String keyword, int page, int size) {
 		Pageable pageable = PageRequest.of(page, Math.min(size, MAX_PAGE_SIZE));
-		var result = priceReportQueryRepository.searchForAdmin(flagged, status, pharmacyId, drugId, pageable);
+		String trimmedKeyword = keyword != null && !keyword.isBlank() ? keyword.trim() : null;
+		var result = priceReportQueryRepository.searchForAdmin(
+			flagged, status, pharmacyId, drugId, trimmedKeyword, pageable);
 		return PageResponse.of(result.map(AdminPriceReportListItemResponse::from));
 	}
 
