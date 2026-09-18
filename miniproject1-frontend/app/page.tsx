@@ -7,17 +7,35 @@ const STEPS = [
   {
     icon: SearchCheck,
     title: "약 이름을 검색해요",
-    body: "타이레놀, 판콜에이처럼 찾는 약 이름만 입력하면 돼요.",
+    body: (
+      <>
+        타이레놀, 판콜에이처럼
+        <br />
+        찾는 약 이름만 입력하면 돼요.
+      </>
+    ),
   },
   {
     icon: MapPinned,
     title: "근처 약국을 비교해요",
-    body: "내 위치 기준 반경 안 약국들의 가격을 나란히 보여드려요.",
+    body: (
+      <>
+        내 위치 기준 반경 안
+        <br />
+        약국들의 가격을 나란히 보여드려요.
+      </>
+    ),
   },
   {
     icon: ReceiptText,
     title: "가격을 나눠요",
-    body: "영수증 속 가격을 제보하면 다음 이웃에게 도움이 돼요.",
+    body: (
+      <>
+        영수증 속 가격을 제보하면
+        <br />
+        다음 이웃에게 도움을 드릴 수 있습니다.
+      </>
+    ),
   },
 ];
 
@@ -30,11 +48,6 @@ const STATS = [
 export default function Home() {
   return (
     <div className="relative flex-1 overflow-hidden bg-secondary/40">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[36rem] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,var(--accent),transparent)] opacity-60"
-      />
-
       {/* 핵심 행동: 검색은 항상 최상단, 스크롤 없이 즉시 보이고 방해받지 않음 */}
       <section className="relative mx-auto flex w-full max-w-2xl flex-col items-center gap-9 px-4 pt-16 pb-14 text-center md:pt-24 md:pb-20">
         <div>
@@ -55,13 +68,7 @@ export default function Home() {
           <h2 className="text-xl font-bold tracking-tight md:text-2xl">이렇게 가격을 비교해요</h2>
           <ol className="mt-8 grid gap-8 md:mt-10 md:grid-cols-3 md:gap-0">
             {STEPS.map((step, i) => (
-              <li key={step.title} className="relative flex gap-4 md:flex-col md:gap-0 md:px-6 md:first:pl-0 md:last:pr-0">
-                {i < STEPS.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute top-6 right-0 hidden h-px w-6 translate-x-full bg-border md:block"
-                  />
-                )}
+              <li key={step.title} className="relative flex gap-4 md:flex-col md:gap-0 md:px-6">
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary md:size-12">
                   <step.icon className="size-5 md:size-6" strokeWidth={1.75} />
                 </div>
@@ -90,8 +97,10 @@ export default function Home() {
               같은 약도 약국마다
               <br className="hidden sm:block" /> 가격이 다르게 붙어요
             </p>
-            <p className="mt-3 max-w-[42ch] text-sm text-muted-foreground md:text-base">
-              공식 가격 데이터베이스가 없는 일반의약품 특성상, 실제 구매 영수증을 나눈 이웃들의 제보가 가장 정확해요.
+            <p className="mt-3 text-sm text-muted-foreground md:text-base">
+              공식 가격 데이터베이스가 없는 일반의약품 특성상,
+              <br />
+              실제 구매 영수증을 나눈 이웃들의 제보가 가장 정확해요.
             </p>
             <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-border pt-6">
               {STATS.map((stat) => (
@@ -107,7 +116,9 @@ export default function Home() {
           <div className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 text-left card-elevated md:p-8">
             <p className="text-sm font-semibold">내가 산 약, 가격 공유하기</p>
             <p className="text-sm text-muted-foreground">
-              영수증만 있으면 30초면 충분해요. 내가 남긴 제보가 다음 이웃의 검색 결과가 돼요.
+              영수증만 있으면 30초면 충분해요.
+              <br />
+              내가 남긴 제보가 다음 이웃의 검색 결과가 돼요.
             </p>
             <Button
               nativeButton={false}
