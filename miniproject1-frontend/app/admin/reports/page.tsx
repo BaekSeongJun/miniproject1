@@ -8,6 +8,7 @@ import { useRequireAdmin } from "@/hooks/use-require-admin";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -117,13 +118,15 @@ export default function AdminReportsPage() {
   if (!ready) return <LoadingSkeleton rows={5} />;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 px-6 py-6">
       <div>
-        <h1 className="text-lg font-semibold">제보 관리</h1>
-        {data && <p className="text-sm text-muted-foreground">{data.totalElements}건</p>}
+        <h1 className="admin-page-title">제보 관리</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {data ? `총 ${data.totalElements.toLocaleString()}건의 제보를 검토합니다.` : "제보 데이터를 검토하고 이상치를 처리합니다."}
+        </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="card-elevated flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center">
         <Select value={flagFilter} onValueChange={(v) => v && setFlagFilter(v as typeof flagFilter)}>
           <SelectTrigger aria-label="이상치 필터" className="sm:w-40">
             <SelectValue>{(value: string) => FLAG_OPTIONS.find((o) => o.value === value)?.label ?? value}</SelectValue>
@@ -153,105 +156,102 @@ export default function AdminReportsPage() {
       {data && data.content.length === 0 && <EmptyState message="조건에 맞는 제보가 없습니다." />}
 
       {data && data.content.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full min-w-[760px] text-sm">
-            <thead className="sticky top-0 bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-3 py-2 font-medium">약품</th>
-                <th className="px-3 py-2 font-medium">약국</th>
-                <th className="px-3 py-2 font-medium">구매일</th>
-                <th className="px-3 py-2 font-medium">제보자</th>
-                <th className="px-3 py-2 text-right font-medium">가격</th>
-                <th className="px-3 py-2 font-medium">상태</th>
-                <th className="px-3 py-2 text-right font-medium">액션</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {data.content.map((report) => (
-                <tr key={report.id} className="hover:bg-muted/40 transition-colors">
-                  <td className="px-3 py-2">
-                    <p className="font-medium">{report.drug.displayName}</p>
-                    {report.drug.packageUnit && (
-                      <p className="text-xs text-muted-foreground">{report.drug.packageUnit}</p>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-muted-foreground">{report.pharmacy.name}</td>
-                  <td className="px-3 py-2 font-mono text-muted-foreground">{report.purchasedAt}</td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {report.reporter?.email ?? "익명"}
-                    {report.receiptFileId && (
-                      <button
-                        type="button"
-                        onClick={() => openReceipt(report.receiptFileId!)}
-                        className="ml-2 text-xs underline"
-                      >
-                        영수증
-                      </button>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono tabular-nums">{formatPrice(report.price)}</td>
-                  <td className="px-3 py-2">
-                    {/* status와 flagged는 독립된 두 축이지만, flagged=true인 제보는 통계 계산에서
-                        제외되므로(PriceStatRepository IQR 쿼리 WHERE flagged=false) "반영중"이라고
-                        부를 수 없다. 사람이 실제로 신경 쓰는 하나의 상태로 우선순위를 매겨 합친다. */}
-                    <span
-                      className={
-                        report.status === "REJECTED"
-                          ? "rounded-full bg-destructive/15 px-2 py-0.5 text-xs text-destructive"
-                          : report.status === "HIDDEN"
-                            ? "rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-                            : report.flagged
-                              ? "rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-400"
-                              : "rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground"
-                      }
-                    >
-                      {report.status === "REJECTED"
-                        ? "반려됨"
-                        : report.status === "HIDDEN"
-                          ? "숨김됨"
-                          : report.flagged
-                            ? "이상치 (통계 제외·검토 대기)"
-                            : "통계 반영중"}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <div className="flex justify-end gap-1.5">
-                      {report.flagged && (
-                        <Button variant="outline" size="sm" onClick={() => openAction(report, "approve")}>
-                          정상 처리
-                        </Button>
-                      )}
-                      {report.status !== "REJECTED" && (
-                        <Button variant="outline" size="sm" onClick={() => openAction(report, "reject")}>
-                          반려
-                        </Button>
-                      )}
-                      <Button variant="outline" size="sm" onClick={() => openAction(report, "toggleHidden")}>
-                        {report.status === "HIDDEN" ? "복구" : "숨김"}
-                      </Button>
-                    </div>
-                  </td>
+        <div className="card-elevated overflow-hidden rounded-xl border border-border bg-card">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead className="admin-table-head">
+                <tr>
+                  <th className="px-4 py-2.5">약품</th>
+                  <th className="px-4 py-2.5">약국</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">구매일</th>
+                  <th className="px-4 py-2.5">제보자</th>
+                  <th className="px-4 py-2.5 text-right whitespace-nowrap">가격</th>
+                  <th className="px-4 py-2.5">상태</th>
+                  <th className="px-4 py-2.5 text-right">액션</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {data.content.map((report) => (
+                  <tr key={report.id} className="transition-colors hover:bg-muted/40">
+                    <td className="px-4 py-3">
+                      <p className="font-medium">{report.drug.displayName}</p>
+                      {report.drug.packageUnit && (
+                        <p className="text-xs text-muted-foreground">{report.drug.packageUnit}</p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{report.pharmacy.name}</td>
+                    <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">{report.purchasedAt}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <span>{report.reporter?.email ?? "익명"}</span>
+                        {report.receiptFileId && (
+                          <button
+                            type="button"
+                            onClick={() => openReceipt(report.receiptFileId!)}
+                            className="shrink-0 text-xs text-primary underline underline-offset-2 hover:text-primary/80"
+                          >
+                            영수증
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono font-medium whitespace-nowrap tabular-nums">{formatPrice(report.price)}</td>
+                    <td className="px-4 py-3">
+                      {/* status와 flagged는 독립된 두 축이지만, flagged=true인 제보는 통계 계산에서
+                          제외되므로(PriceStatRepository IQR 쿼리 WHERE flagged=false) "반영중"이라고
+                          부를 수 없다. 사람이 실제로 신경 쓰는 하나의 상태로 우선순위를 매겨 합친다. */}
+                      <span
+                        className={
+                          report.status === "REJECTED"
+                            ? "inline-flex items-center rounded-full border border-destructive/30 bg-destructive/15 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-destructive"
+                            : report.status === "HIDDEN"
+                              ? "inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium whitespace-nowrap text-muted-foreground"
+                              : report.flagged
+                                ? "inline-flex items-center rounded-full border border-amber-400/30 bg-amber-400/15 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-amber-300"
+                                : "inline-flex items-center rounded-full border border-primary/30 bg-accent px-2 py-0.5 text-xs font-medium whitespace-nowrap text-accent-foreground"
+                        }
+                      >
+                        {report.status === "REJECTED"
+                          ? "반려됨"
+                          : report.status === "HIDDEN"
+                            ? "숨김됨"
+                            : report.flagged
+                              ? "이상치 (통계 제외·검토 대기)"
+                              : "통계 반영중"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        {report.flagged && (
+                          <Button variant="outline" size="sm" onClick={() => openAction(report, "approve")}>
+                            정상 처리
+                          </Button>
+                        )}
+                        {report.status !== "REJECTED" && (
+                          <Button variant="outline" size="sm" onClick={() => openAction(report, "reject")}>
+                            반려
+                          </Button>
+                        )}
+                        <Button variant="outline" size="sm" onClick={() => openAction(report, "toggleHidden")}>
+                          {report.status === "HIDDEN" ? "복구" : "숨김"}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {data && data.content.length > 0 && (
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
+        <div className="relative flex items-center justify-center text-sm">
+          <span className="absolute left-0 text-muted-foreground">
             {data.totalElements}건 중{" "}
             {data.page * data.size + 1}-{Math.min((data.page + 1) * data.size, data.totalElements)}
           </span>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
-              이전
-            </Button>
-            <Button variant="outline" size="sm" disabled={!data.hasNext} onClick={() => setPage((p) => p + 1)}>
-              다음
-            </Button>
-          </div>
+          <Pagination page={page} totalPages={data.totalPages} onPageChange={setPage} />
         </div>
       )}
 

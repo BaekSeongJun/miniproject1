@@ -26,25 +26,31 @@ export function PriceGapsTab() {
 
   return (
     <ul className="flex flex-col gap-3">
-      {data.rows.map((row) => (
-        <li key={row.drug.id} className="rounded-lg border border-border bg-card p-3">
+      {data.rows.map((row, i) => (
+        <li
+          key={row.drug.id}
+          className="card-elevated rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40"
+        >
           <div className="flex items-baseline justify-between gap-2">
-            <p className="text-sm font-medium">{row.drug.displayName}</p>
+            <p className="flex items-center gap-2 text-sm font-medium">
+              <span className="font-mono text-xs text-muted-foreground tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+              {row.drug.displayName}
+            </p>
             <p className="font-mono text-sm font-semibold tabular-nums">
               {row.gapPct.toFixed(1)}% ({formatPrice(row.gap)})
             </p>
           </div>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary"
               style={{ width: `${(row.gapPct / maxGapPct) * 100}%` }}
             />
           </div>
-          <p className="mt-1.5 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-muted-foreground">
             최저가 {row.cheapestRegion.sido} {row.cheapestRegion.sigungu}{" "}
-            (<span className="font-mono">{formatPrice(row.cheapestRegion.avgPrice)}</span>) · 최고가{" "}
+            (<span className="font-mono tabular-nums">{formatPrice(row.cheapestRegion.avgPrice)}</span>) · 최고가{" "}
             {row.priciestRegion.sido} {row.priciestRegion.sigungu}{" "}
-            (<span className="font-mono">{formatPrice(row.priciestRegion.avgPrice)}</span>)
+            (<span className="font-mono tabular-nums">{formatPrice(row.priciestRegion.avgPrice)}</span>)
           </p>
         </li>
       ))}

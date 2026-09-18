@@ -42,50 +42,50 @@ export function DrugStatsTab() {
             <StatCard label="표준편차" value={formatPrice(Math.round(data.national.stdDev))} />
           </div>
 
-          <div className="rounded-lg border p-4">
-            <p className="mb-2 text-sm font-medium">가격 분포</p>
+          <div className="card-elevated rounded-xl border border-border bg-card p-5">
+            <p className="admin-section-title mb-4">가격 분포</p>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={data.distribution.map((b) => ({ ...b, label: `${formatPrice(b.bucketFrom)}~` }))}
                   margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis
                     dataKey="label"
-                    tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
                     tickMargin={8}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
+                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                     width={32}
                     allowDecimals={false}
                   />
                   <Tooltip />
-                  <Bar dataKey="count" fill="var(--color-primary)" isAnimationActive={false} />
+                  <Bar dataKey="count" fill="var(--primary)" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="rounded-lg border p-4">
-            <p className="mb-2 text-sm font-medium">지역별 평균가</p>
+          <div className="card-elevated rounded-xl border border-border bg-card p-5">
+            <p className="admin-section-title mb-4">지역별 평균가</p>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.byRegion} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis
                     dataKey="sigungu"
-                    tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
                     tickMargin={8}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
+                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                     width={48}
                     tickFormatter={(v: number) => formatPrice(v)}
                   />
                   <Tooltip content={<AvgPriceTooltip />} />
-                  <Bar dataKey="avgPrice" fill="var(--color-primary)" isAnimationActive={false} />
+                  <Bar dataKey="avgPrice" fill="var(--primary)" isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -106,7 +106,7 @@ function AvgPriceTooltip({
   if (!active || !payload?.length) return null;
   const point = payload[0]!.payload;
   return (
-    <div className="rounded-lg border bg-background px-3 py-2 text-xs shadow-sm">
+    <div className="card-elevated rounded-lg border border-border bg-popover px-3 py-2 text-xs text-popover-foreground">
       <p className="font-medium">{point.sigungu}</p>
       <p className="font-mono tabular-nums">{formatPrice(point.avgPrice)}</p>
     </div>
@@ -115,9 +115,9 @@ function AvgPriceTooltip({
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border p-3">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 font-mono text-base font-semibold tabular-nums">{value}</p>
+    <div className="card-elevated rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40">
+      <p className="admin-eyebrow">{label}</p>
+      <p className="mt-1.5 font-mono text-lg font-semibold tracking-tight tabular-nums">{value}</p>
     </div>
   );
 }

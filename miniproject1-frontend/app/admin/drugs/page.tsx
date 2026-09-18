@@ -47,10 +47,12 @@ export default function AdminDrugsPage() {
   if (!ready) return <LoadingSkeleton rows={5} />;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 px-6 py-6">
       <div>
-        <h1 className="text-lg font-semibold">약품 승인 대기</h1>
-        {data && <p className="text-sm text-muted-foreground">승인 대기 {data.totalElements}건</p>}
+        <h1 className="admin-page-title">약품 승인 대기</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {data ? `승인 대기 중인 약품 ${data.totalElements.toLocaleString()}건입니다.` : "신규 등록 약품을 검토하고 승인합니다."}
+        </p>
       </div>
 
       {isLoading && <LoadingSkeleton rows={5} />}
@@ -62,36 +64,42 @@ export default function AdminDrugsPage() {
       {data && data.content.length === 0 && <EmptyState message="승인 대기 중인 약품이 없습니다." />}
 
       {data && data.content.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead className="sticky top-0 bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-3 py-2 font-medium">약품명</th>
-                <th className="px-3 py-2 font-medium">카테고리</th>
-                <th className="px-3 py-2 font-medium">규격</th>
-                <th className="px-3 py-2 text-right font-medium">액션</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {data.content.map((drug) => (
-                <tr key={drug.id} className="hover:bg-muted/40 transition-colors">
-                  <td className="px-3 py-2 font-medium">{drug.displayName}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{drug.category}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{drug.packageUnit ?? "규격 미상"}</td>
-                  <td className="px-3 py-2">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setTarget({ drug, status: "REJECTED" })}>
-                        반려
-                      </Button>
-                      <Button size="sm" onClick={() => setTarget({ drug, status: "APPROVED" })}>
-                        승인
-                      </Button>
-                    </div>
-                  </td>
+        <div className="card-elevated overflow-hidden rounded-xl border border-border bg-card">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
+              <thead className="admin-table-head">
+                <tr>
+                  <th className="px-4 py-2.5">약품명</th>
+                  <th className="px-4 py-2.5">카테고리</th>
+                  <th className="px-4 py-2.5">규격</th>
+                  <th className="px-4 py-2.5 text-right">액션</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {data.content.map((drug) => (
+                  <tr key={drug.id} className="transition-colors hover:bg-muted/40">
+                    <td className="px-4 py-3 font-medium">{drug.displayName}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        {drug.category}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{drug.packageUnit ?? "규격 미상"}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setTarget({ drug, status: "REJECTED" })}>
+                          반려
+                        </Button>
+                        <Button size="sm" onClick={() => setTarget({ drug, status: "APPROVED" })}>
+                          승인
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

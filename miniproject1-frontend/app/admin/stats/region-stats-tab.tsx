@@ -6,7 +6,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useRegions } from "@/hooks/use-regions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/pagination";
 import { ErrorState } from "@/components/error-state";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { formatPrice } from "@/lib/format";
@@ -59,19 +59,21 @@ export function RegionStatsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Select value={sido} onValueChange={setSido}>
-        <SelectTrigger aria-label="시도 필터">
-          <SelectValue placeholder="전체 시도" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={null}>전체 시도</SelectItem>
-          {regionGroups?.map((group) => (
-            <SelectItem key={group.sido} value={group.sido}>
-              {group.sido}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="card-elevated rounded-xl border border-border bg-card p-3">
+        <Select value={sido} onValueChange={setSido}>
+          <SelectTrigger aria-label="시도 필터">
+            <SelectValue placeholder="전체 시도" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={null}>전체 시도</SelectItem>
+            {regionGroups?.map((group) => (
+              <SelectItem key={group.sido} value={group.sido}>
+                {group.sido}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {isLoading && <LoadingSkeleton rows={5} />}
 
@@ -81,66 +83,61 @@ export function RegionStatsTab() {
 
       {data && (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="w-full min-w-[640px] text-sm">
-              <thead className="sticky top-0 bg-muted/50 text-left text-xs text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 font-medium">지역</th>
-                  <th className="px-3 py-2 font-medium">약품</th>
-                  {COLUMNS.map((col) => (
-                    <th key={col.key} className="px-3 py-2 text-right font-medium">
-                      <button
-                        type="button"
-                        onClick={() => toggleSort(col.key)}
-                        className="inline-flex items-center gap-0.5 hover:text-foreground"
-                      >
-                        {col.label}
-                        {sort.key === col.key &&
-                          (sort.desc ? <ChevronDown className="size-3" /> : <ChevronUp className="size-3" />)}
-                      </button>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {data.content.map((row: AdminRegionStatsRow) => (
-                  <tr key={`${row.region.code}-${row.drug.id}`} className="hover:bg-muted/40 transition-colors">
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {row.region.sido} {row.region.sigungu}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">{row.drug.displayName}</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{formatPrice(row.avgPrice)}</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{formatPrice(row.minPrice)}</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{formatPrice(row.maxPrice)}</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{row.pharmacyCount}</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{row.reportCount}</td>
-                  </tr>
-                ))}
-                {data.content.length === 0 && (
+          <div className="card-elevated overflow-hidden rounded-xl border border-border bg-card">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead className="admin-table-head">
                   <tr>
-                    <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
-                      표시할 통계가 없습니다.
-                    </td>
+                    <th className="px-4 py-2.5">지역</th>
+                    <th className="px-4 py-2.5">약품</th>
+                    {COLUMNS.map((col) => (
+                      <th key={col.key} className="px-4 py-2.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(col.key)}
+                          className="inline-flex items-center gap-0.5 hover:text-foreground"
+                        >
+                          {col.label}
+                          {sort.key === col.key &&
+                            (sort.desc ? <ChevronDown className="size-3" /> : <ChevronUp className="size-3" />)}
+                        </button>
+                      </th>
+                    ))}
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {data.content.map((row: AdminRegionStatsRow) => (
+                    <tr key={`${row.region.code}-${row.drug.id}`} className="transition-colors hover:bg-muted/40">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {row.region.sido} {row.region.sigungu}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">{row.drug.displayName}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums">{formatPrice(row.avgPrice)}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums">{formatPrice(row.minPrice)}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums">{formatPrice(row.maxPrice)}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums">{row.pharmacyCount}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums">{row.reportCount}</td>
+                    </tr>
+                  ))}
+                  {data.content.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                        표시할 통계가 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
+          <div className="relative flex items-center justify-center text-sm">
+            <span className="absolute left-0 text-muted-foreground">
               {data.totalElements}건 중{" "}
               {data.totalElements === 0 ? 0 : data.page * data.size + 1}-
               {Math.min((data.page + 1) * data.size, data.totalElements)}
             </span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
-                이전
-              </Button>
-              <Button variant="outline" size="sm" disabled={!data.hasNext} onClick={() => setPage((p) => p + 1)}>
-                다음
-              </Button>
-            </div>
+            <Pagination page={page} totalPages={data.totalPages} onPageChange={setPage} />
           </div>
         </>
       )}

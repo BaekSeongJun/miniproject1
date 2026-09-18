@@ -38,20 +38,22 @@ export function RankingTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Select value={period} onValueChange={(v) => v && setPeriod(v)}>
-        <SelectTrigger aria-label="기간 필터">
-          <SelectValue>
-            {(value: string) => PERIOD_OPTIONS.find((o) => o.value === value)?.label ?? value}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {PERIOD_OPTIONS.map((o) => (
-            <SelectItem key={o.value} value={o.value}>
-              {o.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="card-elevated rounded-xl border border-border bg-card p-3">
+        <Select value={period} onValueChange={(v) => v && setPeriod(v)}>
+          <SelectTrigger aria-label="기간 필터">
+            <SelectValue>
+              {(value: string) => PERIOD_OPTIONS.find((o) => o.value === value)?.label ?? value}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {PERIOD_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <RankingSection
@@ -95,8 +97,8 @@ function RankingSection<R>({
   count: (row: R) => number;
 }) {
   return (
-    <div className="rounded-lg border border-border p-4">
-      <p className="mb-3 text-sm font-medium">{title}</p>
+    <div className="card-elevated rounded-xl border border-border bg-card p-5">
+      <p className="admin-section-title mb-4">{title}</p>
 
       {query.isLoading && <LoadingSkeleton rows={3} />}
 
@@ -114,9 +116,20 @@ function RankingSection<R>({
       {query.data && query.data.rows.length > 0 && (
         <ol className="divide-y divide-border">
           {query.data.rows.map((row, i) => (
-            <li key={i} className="flex items-center justify-between gap-2 py-2 text-sm">
+            <li
+              key={i}
+              className="flex items-center justify-between gap-2 rounded-md px-1.5 py-2 text-sm transition-colors hover:bg-muted/50"
+            >
               <span className="flex items-center gap-2 truncate">
-                <span className="w-5 shrink-0 font-mono text-xs text-muted-foreground">{i + 1}</span>
+                <span
+                  className={
+                    i === 0
+                      ? "w-5 shrink-0 text-center font-mono text-xs font-semibold text-primary"
+                      : "w-5 shrink-0 text-center font-mono text-xs text-muted-foreground"
+                  }
+                >
+                  {i + 1}
+                </span>
                 <span className="truncate">{render(row)}</span>
               </span>
               <span className="shrink-0 font-mono tabular-nums">{count(row).toLocaleString()}</span>

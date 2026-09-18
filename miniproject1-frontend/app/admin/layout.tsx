@@ -10,8 +10,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <SidebarProvider>
           <AdminSidebar />
           <main className="flex-1 overflow-x-auto bg-background text-foreground">
-            <SidebarTrigger className="m-2" />
-            {children}
+            <div className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border/70 bg-background/95 px-3 backdrop-blur supports-backdrop-filter:bg-background/80">
+              <SidebarTrigger />
+            </div>
+            <div className="mx-auto w-full max-w-[1400px]">{children}</div>
           </main>
         </SidebarProvider>
       </TooltipProvider>

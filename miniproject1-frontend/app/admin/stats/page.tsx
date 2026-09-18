@@ -14,8 +14,11 @@ export default function AdminStatsPage() {
   if (!ready) return <LoadingSkeleton rows={5} />;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <h1 className="text-lg font-semibold">통계</h1>
+    <div className="flex flex-col gap-6 px-6 py-6">
+      <div>
+        <h1 className="admin-page-title">통계</h1>
+        <p className="mt-1 text-sm text-muted-foreground">지역·약품 단위 가격 분포와 활동 랭킹을 살펴봅니다.</p>
+      </div>
 
       <Tabs defaultValue="region">
         <TabsList>
