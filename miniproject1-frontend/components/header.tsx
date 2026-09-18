@@ -13,12 +13,12 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm supports-backdrop-filter:bg-card/80">
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+      <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 pl-4">
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
           <LogoMark className="size-7 sm:size-8" />
           <span className="text-base font-bold tracking-tight sm:text-lg">우리동네약값</span>
         </Link>
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 pr-4 sm:gap-4">
           <LocationIndicator />
           {status === "authenticated" && user ? (
             <div className="flex items-center gap-2.5 text-sm sm:gap-3">
