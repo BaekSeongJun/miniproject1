@@ -179,6 +179,7 @@ CREATE INDEX idx_refresh_token_user ON refresh_token (user_id) WHERE revoked_at 
 CREATE INDEX idx_pharmacy_lat_lng   ON pharmacy (lat, lng);      -- 바운딩 박스 선필터
 CREATE INDEX idx_pharmacy_region    ON pharmacy (region_code);
 CREATE INDEX idx_pharmacy_name_trgm ON pharmacy USING gin (name gin_trgm_ops);  -- 이름 부분검색
+CREATE INDEX idx_pharmacy_address_road_trgm ON pharmacy USING gin (address_road gin_trgm_ops);  -- V6: 검색이 name OR address_road라 둘 다 필요
 ```
 
 > `pg_trgm` 확장 필요: `CREATE EXTENSION IF NOT EXISTS pg_trgm;` (PostgreSQL 기본 contrib, 별도 설치 불필요)
@@ -206,6 +207,7 @@ CREATE INDEX idx_pharmacy_name_trgm ON pharmacy USING gin (name gin_trgm_ops);  
 
 ```sql
 CREATE INDEX idx_drug_display_name_trgm ON drug USING gin (display_name gin_trgm_ops);
+CREATE INDEX idx_drug_name_trgm ON drug USING gin (name gin_trgm_ops);  -- V6: 검색이 display_name OR name이라 둘 다 필요
 CREATE INDEX idx_drug_category          ON drug (category);
 CREATE INDEX idx_drug_otc               ON drug (otc_flag) WHERE otc_flag = true;
 ```

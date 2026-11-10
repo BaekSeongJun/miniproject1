@@ -34,7 +34,7 @@ miniProject1/
 
 ### 1. PostgreSQL 17 설치
 
-- **Windows**: [postgresql.org/download/windows](https://www.postgresql.org/download/windows/) 설치 프로그램 실행. Locale은 `C` 또는 `en_US.UTF-8`.
+- **Windows**: [postgresql.org/download/windows](https://www.postgresql.org/download/windows/) 설치 프로그램 실행. **Locale은 `C`로 두지 않는다**(아래 2번 참고).
 - **macOS**: `brew install postgresql@17 && brew services start postgresql@17`
 - **Linux**: 배포판 패키지 또는 PGDG 저장소.
 
@@ -46,7 +46,10 @@ miniProject1/
 
 ```sql
 CREATE USER pharmaprice WITH PASSWORD '실제_비밀번호';
-CREATE DATABASE pharmaprice OWNER pharmaprice ENCODING 'UTF8';
+-- 한글 부분 검색(pg_trgm)은 LC_CTYPE이 UTF-8 계열이어야 동작한다. C 로케일이면 한글 trigram이 비어 인덱스가 쓸모없어진다.
+-- Windows: 'ko-KR' / Linux·macOS: 'ko_KR.UTF-8'
+CREATE DATABASE pharmaprice OWNER pharmaprice ENCODING 'UTF8'
+  TEMPLATE template0 LC_COLLATE 'ko-KR' LC_CTYPE 'ko-KR';
 \c pharmaprice
 GRANT ALL ON SCHEMA public TO pharmaprice;
 ```
@@ -197,3 +200,20 @@ npm run gen:api             # 백엔드 OpenAPI 스펙에서 types/api.ts 재생
 - [API.md](./API.md) — API 명세
 - [ROADMAP.md](./ROADMAP.md) — 태스크 분해
 - [DEMO.md](./DEMO.md) — 데모 시나리오
+
+## 검색 성능 개선 (V6)
+
+약품·약국 검색 쿼리는 `display_name OR name`, `name OR address_road` 조건인데 처음에는 한쪽 컬럼에만 trgm 인덱스가 있었다. `EXPLAIN ANALYZE`로 보니 OR 전체가 인덱스를 타지 못해 전체 스캔을 하고 있었고, DB 로케일이 `C`면 한글에서 trigram이 아예 만들어지지 않는다는 것도 확인했다(`show_trgm('온누리약국')` → `{}`). V6에서 나머지 컬럼에도 trgm 인덱스를 추가하고, README의 DB 생성 절차를 `ko-KR` 로케일로 바꿨다.
+
+측정 조건: PostgreSQL 17.6, `ko-KR` 로케일, 시드 데이터(약국 23,571 · 약품 4,762 · 가격 제보 3,768,400 · 통계 1,075,433), 앱의 목록 쿼리(LIMIT 20) + 페이지 count 쿼리 실행 시간, 50회 중앙값.
+
+| 검색어 | 변경 전 | 변경 후 |
+|---|---|---|
+| 약국 `테헤란로` | 124.2 ms | 0.5 ms |
+| 약국 `행복한` | 68.7 ms | 0.6 ms |
+| 약국 `온누리` | 59.1 ms | 3.2 ms |
+| 약품 `게보린` | 19.5 ms | 0.8 ms |
+| 약품 `판피린` | 20.1 ms | 1.0 ms |
+| 약품 `타이레놀` | 21.8 ms | 11.8 ms |
+
+`타이레놀` 목록 쿼리는 플래너가 일치 행 수를 47건으로 크게 잡아(실제 7건) PK 순서 스캔을 고르기 때문에 아직 느리다. 2글자 검색어는 trigram 특성상 인덱스 효과가 작다.
